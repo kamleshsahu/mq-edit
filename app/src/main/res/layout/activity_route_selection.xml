@@ -26,12 +26,52 @@
             android:paddingTop="8dp"
             android:paddingBottom="8dp">
 
-            <com.mapquest.navigation.sampleapp.searchahead.SearchBarView
-                android:id="@+id/fake_search_bar_view"
+            <!--<com.mapquest.navigation.sampleapp.searchahead.SearchBarView-->
+                <!--android:id="@+id/fake_search_bar_view"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="@dimen/search_bar_height"-->
+                <!--app:placeHolder="true"-->
+                <!--/>-->
+
+            <TextView
+                android:cursorVisible="true"
+                android:textColor="@color/colorPrimary"
+                android:textAllCaps="true"
+                android:fontFamily="sans-serif-thin"
+                android:elevation="5dp"
+                android:layout_margin="10dp"
+                android:padding="9dp"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/search_bar_height"
-                app:placeHolder="true"
+                android:layout_height="wrap_content"
+                android:hint="Start"
+                android:id="@+id/origin"
                 />
+
+            <TextView
+                android:id="@+id/dstn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignEnd="@+id/origin"
+                android:layout_alignStart="@+id/origin"
+                android:layout_below="@+id/origin"
+                android:cursorVisible="true"
+                android:elevation="5dp"
+                android:fontFamily="sans-serif-thin"
+                android:hint="Destination"
+                android:padding="9dp"
+                android:textAllCaps="true"
+                android:textColor="@color/colorPrimary"
+                android:layout_alignRight="@+id/origin"
+                android:layout_alignLeft="@+id/origin" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/go"
+                android:layout_marginTop="10dp"
+                android:text="go"
+                android:layout_below="@+id/dstn"/>
+
         </RelativeLayout>
 
     </android.support.v7.widget.Toolbar>

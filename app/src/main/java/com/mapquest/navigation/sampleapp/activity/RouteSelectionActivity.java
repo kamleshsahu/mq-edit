@@ -115,19 +115,19 @@ public class RouteSelectionActivity extends AppCompatActivity
     private com.mapquest.navigation.model.location.Location mLastLocation;
     private LocationPermissionsResultListener locationPermissionsResultListener;
 
-    @BindView(R.id.gps_center_on_user_location_button)
-    protected FloatingActionButton mGpsCenterOnUserLocationButton;
-
-    @OnClick(R.id.gps_center_on_user_location_button)
-    protected void centerOnUserLocation() {
-        if (hasLocationPermissions()) {
-            if (mLastLocation != null) {
-                mMapController.moveCamera(CameraUpdateFactory.newLatLngZoom(toLatLng(mLastLocation), CENTER_ON_USER_ZOOM_LEVEL));
-            } else {
-                Toast.makeText(this, R.string.no_location, Toast.LENGTH_LONG).show();
-            }
-        }
-    }
+//    @BindView(R.id.gps_center_on_user_location_button)
+//    protected FloatingActionButton mGpsCenterOnUserLocationButton;
+//
+//    @OnClick(R.id.gps_center_on_user_location_button)
+//    protected void centerOnUserLocation() {
+//        if (hasLocationPermissions()) {
+//            if (mLastLocation != null) {
+//                mMapController.moveCamera(CameraUpdateFactory.newLatLngZoom(toLatLng(mLastLocation), CENTER_ON_USER_ZOOM_LEVEL));
+//            } else {
+//                Toast.makeText(this, R.string.no_location, Toast.LENGTH_LONG).show();
+//            }
+//        }
+//    }
 
     private Coordinate mStartingCoordinate;
     private List<Destination> mDestinationLocations = new ArrayList<>();
@@ -145,6 +145,13 @@ public class RouteSelectionActivity extends AppCompatActivity
     private Float mMapExtentPaddingTop = null;
     private Float mMapExtentPaddingBottom = null;
 
+    static TextView origin;
+    static TextView dstn;
+    Button Go;
+    static Coordinate originCord;
+            static Destination dstnCord;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate()");
@@ -153,6 +160,10 @@ public class RouteSelectionActivity extends AppCompatActivity
         setContentView(R.layout.activity_route_selection);
         ButterKnife.bind(this);
 
+        origin=findViewById(R.id.origin);
+        dstn=findViewById(R.id.dstn);
+        Go=findViewById(R.id.go);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -160,17 +171,17 @@ public class RouteSelectionActivity extends AppCompatActivity
         mRouteService = new RouteService.Builder().build(getApplicationContext(), BuildConfig.API_KEY);
 
         // setup search-bar placeholder view; will display search-ahead fragment when clicked
-        SearchBarView searchBarView = toolbar.findViewById(R.id.fake_search_bar_view);
-        searchBarView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                SearchAheadFragment searchAheadFragment = SearchAheadFragment.newInstance();
-                getSupportFragmentManager().beginTransaction()
-                            .add(android.R.id.content, searchAheadFragment, SEARCH_AHEAD_FRAGMENT_TAG)
-                            .addToBackStack(null)
-                            .commit();
-            }
-        });
+//        SearchBarView searchBarView = toolbar.findViewById(R.id.fake_search_bar_view);
+//        searchBarView.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                SearchAheadFragment searchAheadFragment = SearchAheadFragment.newInstance();
+//                getSupportFragmentManager().beginTransaction()
+//                            .add(android.R.id.content, searchAheadFragment, SEARCH_AHEAD_FRAGMENT_TAG)
+//                            .addToBackStack(null)
+//                            .commit();
+//            }
+//        });
 
         mMap.onCreate(savedInstanceState);
         mMap.getMapAsync(new OnMapReadyCallback() {
@@ -178,7 +189,7 @@ public class RouteSelectionActivity extends AppCompatActivity
             public void onMapReady(final MapboxMap mapController) {
                 mMapController = mapController;
                 mRoutePolylinePresenter = new RoutePolylinePresenter(mMap, mMapController);
-                initGpsButton();
+  //              initGpsButton();
 
                 // note: regular click on map will select a *route* to navigate
                 mapController.setOnMapClickListener(new RouteClickListener());
@@ -193,33 +204,63 @@ public class RouteSelectionActivity extends AppCompatActivity
                     }
                 };
 
-                requestLocationPermissions(new LocationPermissionsResultListener() {
-                    @Override
-                    public void onRequestLocationPermissionsResult(boolean locationPermissionsWereGranted) {
-                        if (locationPermissionsWereGranted) {
-                            // OK, now that we have location permissions, init our GPS location-provider, and zoom the map-view
-                            mApp.getLocationProviderAdapter().initialize();
-                            acquireCurrentLocationAndZoom(mMapController);
-
-                        } else {
-                            // permission "denied"... so we cannot acquire the current location; explain why perms are needed
-                            final AlertDialog.Builder builder = new AlertDialog.Builder(RouteSelectionActivity.this);
-                            builder.setTitle("Location Permissions Required");
-                            builder.setMessage(
-                                    "Without Location Permissions most of the app functionality will be disabled.  " +
-                                            "You will need to restart the app and accept the Location Permissions request");
-                            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                }
-                            });
-                            builder.show();
-                        }
-                    }
-                });
+//                requestLocationPermissions(new LocationPermissionsResultListener() {
+//                    @Override
+//                    public void onRequestLocationPermissionsResult(boolean locationPermissionsWereGranted) {
+//                        if (locationPermissionsWereGranted) {
+//                            // OK, now that we have location permissions, init our GPS location-provider, and zoom the map-view
+//                            mApp.getLocationProviderAdapter().initialize();
+//                            acquireCurrentLocationAndZoom(mMapController);
+//
+//                        } else {
+//                            // permission "denied"... so we cannot acquire the current location; explain why perms are needed
+//                            final AlertDialog.Builder builder = new AlertDialog.Builder(RouteSelectionActivity.this);
+//                            builder.setTitle("Location Permissions Required");
+//                            builder.setMessage(
+//                                    "Without Location Permissions most of the app functionality will be disabled.  " +
+//                                            "You will need to restart the app and accept the Location Permissions request");
+//                            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+//                                @Override
+//                                public void onClick(DialogInterface dialogInterface, int i) {
+//                                }
+//                            });
+//                            builder.show();
+//                        }
+//                    }
+//                });
             }
         });
         mFollowUserLocationListener = new FollowUserLocationListener();
+
+
+
+
+        origin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent =new Intent(RouteSelectionActivity.this,SelectPlace.class);
+                intent.putExtra("data",0);
+                startActivity(intent);
+            }
+        });
+
+        dstn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent =new Intent(RouteSelectionActivity.this,SelectPlace.class);
+                intent.putExtra("data",1);
+                startActivity(intent);
+            }
+        });
+
+        Go.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                mDestinationLocations.add(dstnCord);
+                retrieveRouteFromStartingLocationToDestinations(originCord,mDestinationLocations);
+            }});
+
 
         clearMappedRoutes();
         for (Marker marker : mDestinationMarkers) {
@@ -284,7 +325,7 @@ public class RouteSelectionActivity extends AppCompatActivity
     @OnClick(R.id.retrieve_routes)
     protected void retrieveRoutes() {
         mRouteNameTextView.setVisibility(View.GONE);
-        acquireCurrentLocationAndRetrieveRoutesToDestinations(mDestinationLocations);
+     //   acquireCurrentLocationAndRetrieveRoutesToDestinations(mDestinationLocations);
     }
 
     @OnClick(R.id.clear_routes)
@@ -725,30 +766,30 @@ public class RouteSelectionActivity extends AppCompatActivity
         return nearestRoute;
     }
 
-    private void initGpsButton() {
-        mGpsCenterOnUserLocationButton.setVisibility(View.VISIBLE);
-        mGpsCenterOnUserLocationButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (hasLocationPermissions()) {
-                    // re-acquire current location and zoom/center map to that location
-                    acquireCurrentLocationAndZoom(mMapController);
-                } else {
-                    requestLocationPermissions(new LocationPermissionsResultListener() {
-                        @Override
-                        public void onRequestLocationPermissionsResult(boolean locationPermissionsWereGranted) {
-                            if (locationPermissionsWereGranted) {
-                                acquireCurrentLocationAndZoom(mMapController);
-                            } else {
-                                // location-permissions were *denied* by the user...
-                                // so nothing to do (until the user taps the "GPS center" button again)
-                            }
-                        }
-                    });
-                }
-            }
-        });
-    }
+//    private void initGpsButton() {
+//        mGpsCenterOnUserLocationButton.setVisibility(View.VISIBLE);
+//        mGpsCenterOnUserLocationButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (hasLocationPermissions()) {
+//                    // re-acquire current location and zoom/center map to that location
+//                    acquireCurrentLocationAndZoom(mMapController);
+//                } else {
+//                    requestLocationPermissions(new LocationPermissionsResultListener() {
+//                        @Override
+//                        public void onRequestLocationPermissionsResult(boolean locationPermissionsWereGranted) {
+//                            if (locationPermissionsWereGranted) {
+//                                acquireCurrentLocationAndZoom(mMapController);
+//                            } else {
+//                                // location-permissions were *denied* by the user...
+//                                // so nothing to do (until the user taps the "GPS center" button again)
+//                            }
+//                        }
+//                    });
+//                }
+//            }
+//        });
+//    }
 
     private class FollowUserLocationListener implements LocationListener {
 

@@ -71,22 +71,22 @@
 
     </RelativeLayout>
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/gps_center_on_user_location_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top|left"
-        android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="72dp"
-        android:src="@drawable/ic_gps_fixed_white_24dp"
-        app:backgroundTint="@color/mapbox_blue"
-        app:borderWidth="0dp"
-        app:elevation="0dp"
-        app:fabSize="normal"
-        app:layout_anchor="@id/route_selection_main_content"
-        app:layout_anchorGravity="top|left|start"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+    <!--<android.support.design.widget.FloatingActionButton-->
+        <!--android:id="@+id/gps_center_on_user_location_button"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_gravity="top|left"-->
+        <!--android:layout_marginStart="16dp"-->
+        <!--android:layout_marginLeft="16dp"-->
+        <!--android:layout_marginTop="72dp"-->
+        <!--android:src="@drawable/ic_gps_fixed_white_24dp"-->
+        <!--app:backgroundTint="@color/mapbox_blue"-->
+        <!--app:borderWidth="0dp"-->
+        <!--app:elevation="0dp"-->
+        <!--app:fabSize="normal"-->
+        <!--app:layout_anchor="@id/route_selection_main_content"-->
+        <!--app:layout_anchorGravity="top|left|start"-->
+        <!--app:layout_constraintStart_toStartOf="parent"-->
+        <!--app:layout_constraintTop_toTopOf="parent"/>-->
 
 </android.support.constraint.ConstraintLayout>
