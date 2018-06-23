@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    android:id="@+id/main_content"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.mapquest.navigation.sampleapp.activity.RouteSelectionActivity">
+
+    <include layout="@layout/route_selection_content"/>
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:contentInsetLeft="8dp"
+        android:contentInsetStart="8dp"
+        app:contentInsetLeft="8dp"
+        app:contentInsetStart="8dp"
+        android:minHeight="70dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp">
+
+            <com.mapquest.navigation.sampleapp.searchahead.SearchBarView
+                android:id="@+id/fake_search_bar_view"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/search_bar_height"
+                app:placeHolder="true"
+                />
+        </RelativeLayout>
+
+    </android.support.v7.widget.Toolbar>
+
+</android.support.constraint.ConstraintLayout>

@@ -1,0 +1,36 @@
+<resources>
+    <string name="app_name">MapQuest Navigation (SAMPLE)</string>
+
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="list_view_title">List</string>
+    <string name="map_view_title">Map</string>
+
+    <string name="no_location">No Location</string>
+
+    <string name="left_turn_arrow">\u21B0</string>
+    <string name="right_turn_arrow">\u21B1</string>
+
+    <string name="maneuver_distance_metric">%1$d meters</string>
+    <string name="maneuver_distance_imperial">%1$.2f miles</string>
+    <string name="maneuver_distance_metric_es">%1$d metros</string>
+    <string name="maneuver_distance_imperial_es">%1$.2f millas</string>
+
+    <!-- Search Ahead -->
+    <string name="enter_location">Enter Location</string>
+    <string name="max_search_character_limit">Sorry, unable to handle more than 100 characters in search.</string>
+
+    <!-- Fonts -->
+    <string name="asset_font_filename_bold">fonts/raleway-bold-webfont.ttf</string>
+    <string name="asset_font_filename_flama_medium">fonts/Flama-Medium.otf</string>
+    <string name="asset_font_filename_mapquest_icons">fonts/MapQuestIcons1.6.9.ttf</string>
+    <string name="asset_font_filename_mapquest_weather_icons">fonts/MapQuestWeatherIcons-1.0.3.otf</string>
+    <string name="asset_font_filename_regular">fonts/raleway-regular-webfont.ttf</string>
+    <string name="asset_font_filename_semibold">fonts/raleway-semibold-webfont.ttf</string>
+
+    <string name="user_tracking_consent_dialog_title">Allow MapQuest to collect data?</string>
+    <string name="user_tracking_consent_dialog_message">Get consent here after clearly indicating that this app will collect precise location data when app is actively navigating and will be shared with third parties for their independent use.</string>
+    <string name="user_tracking_consent_dialog_negative_button_text">No</string>
+    <string name="user_tracking_consent_dialog_positive_button_text">Yes</string>
+</resources>
