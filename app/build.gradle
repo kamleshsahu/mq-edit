@@ -57,4 +57,6 @@ dependencies {
 
     // multidex support lib (required when minSdkVersion is below 21)
     compile 'com.android.support:multidex:1.0.1'
+
+    compile 'org.jbundle.util.osgi.wrapped:org.jbundle.util.osgi.wrapped.org.apache.http.client:4.1.2'
 }

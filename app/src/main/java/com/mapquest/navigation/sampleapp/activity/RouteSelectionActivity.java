@@ -2,6 +2,7 @@ package com.mapquest.navigation.sampleapp.activity;
 
 import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -23,6 +24,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.PolylineOptions;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
@@ -92,6 +94,7 @@ public class RouteSelectionActivity extends AppCompatActivity
     private static final String SHARED_PREFERENCE_NAME = "com.mapquest.navigation.sampleapp.activity.RouteSelectionActivity";
     private static final String USER_TRACKING_CONSENT_KEY = "user_tracking_consent";
 
+    static SharedPreferences sd;
     @BindView(R.id.start)
     protected Button mStartButton;
 
@@ -112,7 +115,7 @@ public class RouteSelectionActivity extends AppCompatActivity
     private MapboxMap.OnMapLongClickListener mMapLongClickListener;
     private ProgressDialog mRoutingDialog;
 
-    private com.mapquest.navigation.model.location.Location mLastLocation;
+ //   private com.mapquest.navigation.model.location.Location mLastLocation;
     private LocationPermissionsResultListener locationPermissionsResultListener;
 
 //    @BindView(R.id.gps_center_on_user_location_button)
@@ -130,7 +133,7 @@ public class RouteSelectionActivity extends AppCompatActivity
 //    }
 
     private Coordinate mStartingCoordinate;
-    private List<Destination> mDestinationLocations = new ArrayList<>();
+   static  List<Destination> mDestinationLocations = new ArrayList<>();
 
     private Marker mOriginMarker;
     private List<Marker> mDestinationMarkers = new ArrayList<>();
@@ -147,7 +150,7 @@ public class RouteSelectionActivity extends AppCompatActivity
 
     static TextView origin;
     static TextView dstn;
-    Button Go;
+    static Button Go;
     static Coordinate originCord;
             static Destination dstnCord;
 
@@ -159,7 +162,7 @@ public class RouteSelectionActivity extends AppCompatActivity
 
         setContentView(R.layout.activity_route_selection);
         ButterKnife.bind(this);
-
+        sd = this.getSharedPreferences(getApplication().getPackageName(), Context.MODE_PRIVATE);
         origin=findViewById(R.id.origin);
         dstn=findViewById(R.id.dstn);
         Go=findViewById(R.id.go);
@@ -230,7 +233,7 @@ public class RouteSelectionActivity extends AppCompatActivity
 //                });
             }
         });
-        mFollowUserLocationListener = new FollowUserLocationListener();
+//        mFollowUserLocationListener = new FollowUserLocationListener();
 
 
 
@@ -256,9 +259,12 @@ public class RouteSelectionActivity extends AppCompatActivity
         Go.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                mDestinationLocations=new ArrayList<>();
                 mDestinationLocations.add(dstnCord);
                 retrieveRouteFromStartingLocationToDestinations(originCord,mDestinationLocations);
+                markOrigin(originCord);
+                addDestinationToRoute(dstnCord, dstnCord.getMqId());
+
             }});
 
 
@@ -539,10 +545,14 @@ public class RouteSelectionActivity extends AppCompatActivity
                 });
     }
 
+
     private void retrieveRouteFromStartingLocationToDestinations(final Coordinate startingCoordinate, final List<Destination> destinationLocations) {
         RoutesResponseListener responseListener = new RoutesResponseListener() {
             @Override
             public void onRoutesRetrieved(@NonNull List<com.mapquest.navigation.model.Route> routes) {
+
+                System.out.println("here is route data :e"+new Gson().toJson(routes));
+
                 if(mRoutingDialog != null) {
                     mRoutingDialog.dismiss();
                 }
@@ -791,12 +801,12 @@ public class RouteSelectionActivity extends AppCompatActivity
 //        });
 //    }
 
-    private class FollowUserLocationListener implements LocationListener {
-
-        @Override
-        public void onLocationChanged(com.mapquest.navigation.model.location.Location location) {
-            mLastLocation = location;
-            markOrigin(location);
-        }
-    }
+//    private class FollowUserLocationListener implements LocationListener {
+//
+//        @Override
+//        public void onLocationChanged(com.mapquest.navigation.model.location.Location location) {
+//            mLastLocation = location;
+//            markOrigin(location);
+//        }
+//    }
 }
