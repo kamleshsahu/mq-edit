@@ -551,6 +551,7 @@ public class RouteSelectionActivity extends AppCompatActivity
             @Override
             public void onRoutesRetrieved(@NonNull List<com.mapquest.navigation.model.Route> routes) {
 
+                System.out.println("origin :"+origin+","+"dstn :"+dstnCord.getCoordinate());
                 System.out.println("here is route data :e"+new Gson().toJson(routes));
 
                 if(mRoutingDialog != null) {
