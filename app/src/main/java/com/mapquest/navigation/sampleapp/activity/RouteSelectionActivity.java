@@ -31,7 +31,9 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.mapbox.mapboxsdk.annotations.IconFactory;
 import com.mapbox.mapboxsdk.annotations.Marker;
+import com.mapbox.mapboxsdk.annotations.Icon;
 import com.mapbox.mapboxsdk.annotations.PolylineOptions;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
@@ -56,6 +58,11 @@ import com.mapquest.navigation.model.location.Coordinate;
 import com.mapquest.navigation.model.location.Destination;
 import com.mapquest.navigation.sampleapp.BuildConfig;
 import com.mapquest.navigation.sampleapp.MQNavigationSampleApplication;
+import com.mapquest.navigation.sampleapp.Methods.FetchCloudData;
+import com.mapquest.navigation.sampleapp.Methods.iconfromString;
+import com.mapquest.navigation.sampleapp.Models.Item;
+import com.mapquest.navigation.sampleapp.Models.Output;
+import com.mapquest.navigation.sampleapp.Models.Step;
 import com.mapquest.navigation.sampleapp.R;
 import com.mapquest.navigation.sampleapp.location.CurrentLocationProvider;
 import com.mapquest.navigation.sampleapp.searchahead.SearchAheadFragment;
@@ -69,10 +76,12 @@ import com.podcopic.animationlib.library.StartSmartAnimation;
 import net.cachapa.expandablelayout.ExpandableLayout;
 
 import java.io.IOException;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -162,14 +171,17 @@ public class RouteSelectionActivity extends AppCompatActivity
     static TextView dstn;
     static TextView Go;
     static Coordinate originCord;
-            static Destination dstnCord;
+    static Destination dstnCord;
     DatePicker datePicker;
     TimePicker timePicker;
     CardView datePickerr,timePickerr;
 
     TextView date;
-    TextView time;
-
+    TextView timee;
+    long route=0;
+    long interval=50000;
+    String timezone="America.Denver";
+    long time=0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate()");
@@ -201,7 +213,7 @@ public class RouteSelectionActivity extends AppCompatActivity
         datePickerr=findViewById(R.id.datepickerr);
         timePickerr=findViewById(R.id.timepickerr);
         date=findViewById(R.id.date);
-        time=findViewById(R.id.time);
+        timee=findViewById(R.id.time);
 
         int day = datePicker.getDayOfMonth();
         int month = datePicker.getMonth() + 1;
@@ -216,9 +228,9 @@ public class RouteSelectionActivity extends AppCompatActivity
         if (min<10){
             minute="0"+String.valueOf(min);
 
-            time.setText(hour+":"+minute);
+            timee.setText(hour+":"+minute);
         }else
-            time.setText(hour+":"+min);
+            timee.setText(hour+":"+min);
 
         findViewById(R.id.datepickerclicker).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -284,9 +296,9 @@ public class RouteSelectionActivity extends AppCompatActivity
                 String minute = null;
                 if (min<10){
                     minute="0"+String.valueOf(min);
-                    time.setText(hour+":"+minute);
+                    timee.setText(hour+":"+minute);
                 }else
-                    time.setText(hour+":"+min);
+                    timee.setText(hour+":"+min);
             }
 
         });
@@ -690,12 +702,12 @@ public class RouteSelectionActivity extends AppCompatActivity
                     mRoutingDialog.dismiss();
                 }
                 mapRoutes(routes, null);
-                if(routes.size() > 1) {
-                    toast(RouteSelectionActivity.this, routes.size() + " routes returned.\n\nChoose one to navigate by tapping on it.");
-                } else {
+           //     if(routes.size() > 1) {
+           //         toast(RouteSelectionActivity.this, routes.size() + " routes returned.\n\nChoose one to navigate by tapping on it.");
+          //      } else {
                     // if only one route returned, auto-select it
                     setSelectedRoute(routes.get(0));
-                }
+             //   }
             }
 
             @Override
@@ -821,7 +833,17 @@ public class RouteSelectionActivity extends AppCompatActivity
     }
 
     private Marker markLocation(LatLng latLng, @ColorRes int fillColorResourceId) {
+//        IconFactory iconFactory = IconFactory.getInstance(getApplicationContext());
+//        Icon icon = iconFactory.fromResource(R.drawable.rain);
         return mMapController.addMarker(buildDownArrowMarkerOptions(this, fillColorResourceId)
+                .position(latLng));
+    }
+
+    private Marker markLocationwithIcon(LatLng latLng, @ColorRes int fillColorResourceId,String iconname) {
+        IconFactory iconFactory = IconFactory.getInstance(getApplicationContext());
+               Icon icon=new iconfromString(iconFactory,iconname).getIcon();
+        return mMapController.addMarker(buildDownArrowMarkerOptions(this, fillColorResourceId)
+                .icon(icon)
                 .position(latLng));
     }
 
@@ -845,8 +867,8 @@ public class RouteSelectionActivity extends AppCompatActivity
     private class RouteClickListener implements MapboxMap.OnMapClickListener {
         @Override
         public void onMapClick(@NonNull LatLng latLng) {
-            List<Route> drawnRoutes = new ArrayList<>(mRoutePolylineOptionsListByRoute.keySet());
-            setSelectedRoute(findNearestRoute(drawnRoutes, toCoordinate(latLng)));
+ //           List<Route> drawnRoutes = new ArrayList<>(mRoutePolylineOptionsListByRoute.keySet());
+//            setSelectedRoute(findNearestRoute(drawnRoutes, toCoordinate(latLng)));
 
 //            List<Route> routes = new ArrayList<>(mRoutePolylineOptionsListByRoute.keySet());
 //            clearMappedRoutes();
@@ -883,7 +905,22 @@ public class RouteSelectionActivity extends AppCompatActivity
             //mRouteNameTextView.setVisibility(View.VISIBLE);
          //   mRouteNameTextView.setText(mSelectedRoute.getName() != null ? mSelectedRoute.getName() : "");
 
-            enableButton(mStartButton, true);
+
+ //           enableButton(mStartButton, true);
+
+            try {
+                String result= new FetchCloudData().execute(getApplicationContext(),originCord,dstnCord,route,interval,timezone,time).get().toString();
+
+                Output output=new Gson().fromJson(result,Output.class);
+                System.out.println(output);
+                puttomap(output);
+
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -907,6 +944,20 @@ public class RouteSelectionActivity extends AppCompatActivity
             }
         }
         return nearestRoute;
+    }
+
+
+    public void puttomap(Output output){
+        List <Step> steps=output.getSteps();
+        for(int k=0;k<steps.size();k++){
+            markLocationwithIcon(new LatLng(steps.get(k).getStep().getStartPoint().getLat(),steps.get(k).getStep().getStartPoint().getLng()), R.color.marker_orange,steps.get(k).getWlist().getIcon());
+        }
+
+        List <Item> interm=output.getItems();
+        for(int k=0;k<interm.size();k++){
+            markLocationwithIcon(new LatLng(interm.get(k).getPoint().getLat(),interm.get(k).getPoint().getLng()), R.color.marker_blue,interm.get(k).getWlist().getIcon());
+        }
+
     }
 
 //    private void initGpsButton() {
