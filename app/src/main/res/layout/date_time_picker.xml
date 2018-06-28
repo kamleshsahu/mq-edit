@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <android.support.v7.widget.CardView
+        android:layout_centerInParent="true"
+        app:cardElevation="20dp"
+        android:id="@+id/datepickerr"
+        android:layout_margin="30dp"
+        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+    <DatePicker
+        android:background="@color/white"
+
+        android:id="@+id/datepicker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+    </DatePicker>
+    </android.support.v7.widget.CardView>
+    <android.support.v7.widget.CardView
+        app:cardElevation="20dp"
+        android:layout_centerInParent="true"
+        android:layout_margin="30dp"
+        android:visibility="gone"
+        android:id="@+id/timepickerr"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+    <TimePicker
+        android:background="@color/white"
+        android:id="@+id/timepicker"
+
+        android:paddingBottom="20dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+    </TimePicker>
+    </android.support.v7.widget.CardView>
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/datecheck"
+        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        app:elevation="6dp"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_check_black_24dp" />
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/timecheck"
+        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        app:elevation="6dp"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_check_black_24dp" />
+
+</RelativeLayout>

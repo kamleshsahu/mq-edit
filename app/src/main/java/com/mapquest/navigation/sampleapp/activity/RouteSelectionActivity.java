@@ -1,27 +1,33 @@
 package com.mapquest.navigation.sampleapp.activity;
 
 import android.Manifest;
+import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.ColorRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -57,6 +63,10 @@ import com.mapquest.navigation.sampleapp.searchahead.SearchBarView;
 import com.mapquest.navigation.sampleapp.service.NavigationNotificationService;
 import com.mapquest.navigation.sampleapp.util.LocationUtil;
 import com.mapquest.navigation.util.ShapeSegmenter;
+import com.podcopic.animationlib.library.AnimationType;
+import com.podcopic.animationlib.library.StartSmartAnimation;
+
+import net.cachapa.expandablelayout.ExpandableLayout;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -102,10 +112,10 @@ public class RouteSelectionActivity extends AppCompatActivity
     protected Button mRetrieveRoutesButton;
 
     @BindView(R.id.clear_routes)
-    protected Button mClearRoutesButton;
+    protected FloatingActionButton mClearRoutesButton;
 
-    @BindView(R.id.route_name_text_view)
-    protected TextView mRouteNameTextView;
+//    @BindView(R.id.route_name_text_view)
+//    protected TextView mRouteNameTextView;
 
     @BindView(R.id.map)
     protected MapView mMap;
@@ -150,10 +160,15 @@ public class RouteSelectionActivity extends AppCompatActivity
 
     static TextView origin;
     static TextView dstn;
-    static Button Go;
+    static TextView Go;
     static Coordinate originCord;
             static Destination dstnCord;
+    DatePicker datePicker;
+    TimePicker timePicker;
+    CardView datePickerr,timePickerr;
 
+    TextView date;
+    TextView time;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -161,6 +176,121 @@ public class RouteSelectionActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_route_selection);
+//Expandable view...................................................................................
+        final ExpandableLayout expandableLayout=findViewById(R.id.expandable_layout);
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                //Do something after 100ms
+                expandableLayout.expand();
+            }
+        }, 700);
+
+        findViewById(R.id.exp).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                expandableLayout.toggle();
+            }
+        });
+//..................................................................................................
+
+//Date and Time Picker..............................................................................
+        datePicker=findViewById(R.id.datepicker);
+        timePicker=findViewById(R.id.timepicker);
+        datePickerr=findViewById(R.id.datepickerr);
+        timePickerr=findViewById(R.id.timepickerr);
+        date=findViewById(R.id.date);
+        time=findViewById(R.id.time);
+
+        int day = datePicker.getDayOfMonth();
+        int month = datePicker.getMonth() + 1;
+        int year = datePicker.getYear();
+
+        date.setText(day+"-"+month+"-"+year);
+
+        int hour = timePicker.getCurrentHour();
+        int min = timePicker.getCurrentMinute();
+        String minute = null;
+
+        if (min<10){
+            minute="0"+String.valueOf(min);
+
+            time.setText(hour+":"+minute);
+        }else
+            time.setText(hour+":"+min);
+
+        findViewById(R.id.datepickerclicker).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        //Do something after 100ms
+                        datePickerr.setVisibility(View.VISIBLE);
+                        findViewById(R.id.datecheck).setVisibility(View.VISIBLE);
+                    }
+                }, 300);
+
+
+                StartSmartAnimation.startAnimation( datePickerr , AnimationType.SlideInDown , 700 , 0 , true );
+                StartSmartAnimation.startAnimation( findViewById(R.id.datecheck) , AnimationType.SlideInUp , 700 , 0 , true );
+
+                datePicker.setMinDate(System.currentTimeMillis() - 1000);
+
+            }
+        });
+        findViewById(R.id.datecheck).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        //Do something after 100ms
+                        timePickerr.setVisibility(View.VISIBLE);
+                        datePickerr.setVisibility(View.GONE);
+                    }
+                }, 700);
+                StartSmartAnimation.startAnimation( datePickerr , AnimationType.SlideOutUp , 700 , 0 , true );
+                StartSmartAnimation.startAnimation( timePickerr , AnimationType.SlideInDown , 1000 , 0 , true );
+                findViewById(R.id.timecheck).setVisibility(View.VISIBLE);
+                StartSmartAnimation.startAnimation(     findViewById(R.id.timecheck), AnimationType.SlideInUp , 0 , 0 , true );
+                int day = datePicker.getDayOfMonth();
+                int month = datePicker.getMonth() + 1;
+                int year = datePicker.getYear();
+                date.setText(day+"-"+month+"-"+year);
+                findViewById(R.id.datecheck).setVisibility(View.GONE);
+
+
+            }
+        });
+        findViewById(R.id.timecheck).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        //Do something after 100ms
+                        timePickerr.setVisibility(View.GONE);
+                        findViewById(R.id.timecheck).setVisibility(View.GONE);
+                    }
+                }, 700);
+
+                StartSmartAnimation.startAnimation( timePickerr , AnimationType.SlideOutUp , 700 , 0 , true );
+                StartSmartAnimation.startAnimation( findViewById(R.id.timecheck) , AnimationType.SlideOutDown , 700 , 0 , true );
+                int hour = timePicker.getCurrentHour();
+                int min = timePicker.getCurrentMinute();
+                String minute = null;
+                if (min<10){
+                    minute="0"+String.valueOf(min);
+                    time.setText(hour+":"+minute);
+                }else
+                    time.setText(hour+":"+min);
+            }
+
+        });
+//..................................................................................................
         ButterKnife.bind(this);
         sd = this.getSharedPreferences(getApplication().getPackageName(), Context.MODE_PRIVATE);
         origin=findViewById(R.id.origin);
@@ -259,6 +389,7 @@ public class RouteSelectionActivity extends AppCompatActivity
         Go.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                expandableLayout.toggle();
                 mDestinationLocations=new ArrayList<>();
                 mDestinationLocations.add(dstnCord);
                 retrieveRouteFromStartingLocationToDestinations(originCord,mDestinationLocations);
@@ -275,7 +406,7 @@ public class RouteSelectionActivity extends AppCompatActivity
 
         mDestinationLocations.clear();
 
-        enableButton(mClearRoutesButton, false);
+        mClearRoutesButton.setVisibility(View.GONE);
         enableButton(mRetrieveRoutesButton, false);
         enableButton(mStartButton, false);
     }
@@ -330,7 +461,7 @@ public class RouteSelectionActivity extends AppCompatActivity
 
     @OnClick(R.id.retrieve_routes)
     protected void retrieveRoutes() {
-        mRouteNameTextView.setVisibility(View.GONE);
+        //mRouteNameTextView.setVisibility(View.GONE);
      //   acquireCurrentLocationAndRetrieveRoutesToDestinations(mDestinationLocations);
     }
 
@@ -343,8 +474,8 @@ public class RouteSelectionActivity extends AppCompatActivity
 
         mDestinationLocations.clear();
 
-        mRouteNameTextView.setVisibility(View.GONE);
-        enableButton(mClearRoutesButton, false);
+       // mRouteNameTextView.setVisibility(View.GONE);
+        mClearRoutesButton.setVisibility(View.GONE);
         enableButton(mRetrieveRoutesButton, false);
         enableButton(mStartButton, false);
 
@@ -386,7 +517,8 @@ public class RouteSelectionActivity extends AppCompatActivity
         Log.d(TAG, "addDestinationToRoute: adding new destination location with mqid " + mqId);
         mDestinationLocations.add(new Destination(destinationCoordinate, mqId));
 
-        enableButton(mClearRoutesButton, true);
+        mClearRoutesButton.setVisibility(View.VISIBLE);
+        StartSmartAnimation.startAnimation( mClearRoutesButton , AnimationType.SlideInUp , 700 , 0 , true );
         enableButton(mRetrieveRoutesButton, true);
         enableButton(mStartButton, false);
     }
@@ -459,7 +591,7 @@ public class RouteSelectionActivity extends AppCompatActivity
 
     @OnClick(R.id.start)
     protected void startNavigationActivity() {
-        mRouteNameTextView.setVisibility(View.GONE);
+        //mRouteNameTextView.setVisibility(View.GONE);
 
         final SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
         if (sharedPreferences.contains(USER_TRACKING_CONSENT_KEY)) {
@@ -748,8 +880,8 @@ public class RouteSelectionActivity extends AppCompatActivity
                 drawnRoutes.add(selectedRoute);
                 mapRoutes(drawnRoutes, selectedRoute);
             }
-            mRouteNameTextView.setVisibility(View.VISIBLE);
-            mRouteNameTextView.setText(mSelectedRoute.getName() != null ? mSelectedRoute.getName() : "");
+            //mRouteNameTextView.setVisibility(View.VISIBLE);
+         //   mRouteNameTextView.setText(mSelectedRoute.getName() != null ? mSelectedRoute.getName() : "");
 
             enableButton(mStartButton, true);
         }
@@ -810,4 +942,5 @@ public class RouteSelectionActivity extends AppCompatActivity
 //            markOrigin(location);
 //        }
 //    }
+//..................................................................................................
 }

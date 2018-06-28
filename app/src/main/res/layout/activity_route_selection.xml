@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<RelativeLayout
     android:id="@+id/main_content"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -8,72 +8,93 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.mapquest.navigation.sampleapp.activity.RouteSelectionActivity">
 
-    <include layout="@layout/route_selection_content"/>
-
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar"
+    <!--<android.support.v7.widget.Toolbar-->
+        <!--android:id="@+id/toolbar"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--&gt;-->
+    <!--</android.support.v7.widget.Toolbar>-->
+    <com.sothree.slidinguppanel.SlidingUpPanelLayout
+        xmlns:sothree="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/sliding_layout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:contentInsetLeft="8dp"
-        android:contentInsetStart="8dp"
-        app:contentInsetLeft="8dp"
-        app:contentInsetStart="8dp"
-        android:minHeight="70dp">
-
+        android:layout_height="match_parent"
+        android:gravity="bottom"
+        sothree:umanoPanelHeight="68dp"
+        sothree:umanoShadowHeight="4dp">
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp">
+            android:layout_height="match_parent">
+    <com.mapquest.mapping.maps.MapView
+        android:id="@+id/map"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        app:mapquest_app_key="@string/API_KEY"/>
+    <LinearLayout
+        android:id="@+id/buttons_ll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_alignParentBottom="true">
 
-            <!--<com.mapquest.navigation.sampleapp.searchahead.SearchBarView-->
-                <!--android:id="@+id/fake_search_bar_view"-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="@dimen/search_bar_height"-->
-                <!--app:placeHolder="true"-->
-                <!--/>-->
 
-            <TextView
-                android:cursorVisible="true"
-                android:textColor="@color/colorPrimary"
-                android:textAllCaps="true"
-                android:fontFamily="sans-serif-thin"
-                android:elevation="5dp"
-                android:layout_margin="10dp"
-                android:padding="9dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Start"
-                android:id="@+id/origin"
-                />
 
-            <TextView
-                android:id="@+id/dstn"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignEnd="@+id/origin"
-                android:layout_alignStart="@+id/origin"
-                android:layout_below="@+id/origin"
-                android:cursorVisible="true"
-                android:elevation="5dp"
-                android:fontFamily="sans-serif-thin"
-                android:hint="Destination"
-                android:padding="9dp"
-                android:textAllCaps="true"
-                android:textColor="@color/colorPrimary"
-                android:layout_alignRight="@+id/origin"
-                android:layout_alignLeft="@+id/origin" />
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/clear_routes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:backgroundTint="#e2b76d"
+            app:elevation="6dp"
+            android:layout_margin="16dp"
+            android:src="@drawable/clear" />
 
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/go"
-                android:layout_marginTop="10dp"
-                android:text="go"
-                android:layout_below="@+id/dstn"/>
+        <Button
+            android:id="@+id/retrieve_routes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="GET ROUTES"
+            android:visibility="gone"/>
 
+        <Button
+            android:id="@+id/start"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="START NAV"
+            android:visibility="gone"/>
+
+    </LinearLayout>
+
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <include android:id="@+id/box_layout" layout="@layout/src_dstn_box"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"></include>
+    <android.support.design.widget.FloatingActionButton
+        android:layout_below="@id/box_layout"
+        android:id="@+id/exp"
+        android:layout_centerInParent="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="-35dp"
+        android:layout_marginBottom="5dp"
+        android:backgroundTint="@color/colorPrimaryDark"
+        app:elevation="6dp"
+        android:src="@drawable/ic_expand_more_black_24dp" />
+</RelativeLayout>
         </RelativeLayout>
-
-    </android.support.v7.widget.Toolbar>
-
-</android.support.constraint.ConstraintLayout>
+    <LinearLayout
+        android:id="@+id/dragup_panel"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center|top"
+        >
+        <include layout="@layout/dragup_panel"></include>
+    </LinearLayout>
+    </com.sothree.slidinguppanel.SlidingUpPanelLayout>
+    <include layout="@layout/date_time_picker"></include>
+</RelativeLayout>
