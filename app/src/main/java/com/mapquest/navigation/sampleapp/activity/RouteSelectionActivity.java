@@ -20,6 +20,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.TypedValue;
@@ -56,6 +58,7 @@ import com.mapquest.navigation.model.RouteOptions;
 import com.mapquest.navigation.model.SystemOfMeasurement;
 import com.mapquest.navigation.model.location.Coordinate;
 import com.mapquest.navigation.model.location.Destination;
+import com.mapquest.navigation.sampleapp.Adapters.DragupListAdapter;
 import com.mapquest.navigation.sampleapp.BuildConfig;
 import com.mapquest.navigation.sampleapp.MQNavigationSampleApplication;
 import com.mapquest.navigation.sampleapp.Methods.FetchCloudData;
@@ -72,6 +75,7 @@ import com.mapquest.navigation.sampleapp.util.LocationUtil;
 import com.mapquest.navigation.util.ShapeSegmenter;
 import com.podcopic.animationlib.library.AnimationType;
 import com.podcopic.animationlib.library.StartSmartAnimation;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import net.cachapa.expandablelayout.ExpandableLayout;
 
@@ -182,6 +186,10 @@ public class RouteSelectionActivity extends AppCompatActivity
     long interval=50000;
     String timezone="America.Denver";
     long time=0;
+
+    static SlidingUpPanelLayout slidingUpPanelLayout;
+    static RecyclerView link;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate()");
@@ -312,21 +320,18 @@ public class RouteSelectionActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+
+        slidingUpPanelLayout=findViewById(R.id.sliding_layout);
+        slidingUpPanelLayout.setPanelHeight(0);
+
+
+        link = (RecyclerView) findViewById(R.id.dragup_list_recycler);
+        link.setLayoutManager(new LinearLayoutManager(this));
+
+
         mApp = (MQNavigationSampleApplication) getApplication();
         mRouteService = new RouteService.Builder().build(getApplicationContext(), BuildConfig.API_KEY);
 
-        // setup search-bar placeholder view; will display search-ahead fragment when clicked
-//        SearchBarView searchBarView = toolbar.findViewById(R.id.fake_search_bar_view);
-//        searchBarView.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                SearchAheadFragment searchAheadFragment = SearchAheadFragment.newInstance();
-//                getSupportFragmentManager().beginTransaction()
-//                            .add(android.R.id.content, searchAheadFragment, SEARCH_AHEAD_FRAGMENT_TAG)
-//                            .addToBackStack(null)
-//                            .commit();
-//            }
-//        });
 
         mMap.onCreate(savedInstanceState);
         mMap.getMapAsync(new OnMapReadyCallback() {
@@ -949,6 +954,10 @@ public class RouteSelectionActivity extends AppCompatActivity
 
     public void puttomap(Output output){
         List <Step> steps=output.getSteps();
+        link.setAdapter(new DragupListAdapter(getApplicationContext(), output.getSteps()));
+  //      if (route.getLegs().get(0).getDuration().getText() != null) {
+            slidingUpPanelLayout.setPanelHeight(getApplicationContext().getResources().getDimensionPixelSize(R.dimen.dragupsize));
+  //     }
         for(int k=0;k<steps.size();k++){
             markLocationwithIcon(new LatLng(steps.get(k).getStep().getStartPoint().getLat(),steps.get(k).getStep().getStartPoint().getLng()), R.color.marker_orange,steps.get(k).getWlist().getIcon());
         }
