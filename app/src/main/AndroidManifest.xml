@@ -37,6 +37,7 @@
             android:name="com.mapquest.navigation.sampleapp.service.NavigationNotificationService"
             android:stopWithTask="true"/>
          <activity android:name=".activity.SelectPlace"></activity>
+         <activity android:name=".activity.Subscription"></activity>
     </application>
 
 </manifest>

@@ -8,6 +8,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -63,6 +66,7 @@ import com.mapquest.navigation.sampleapp.BuildConfig;
 import com.mapquest.navigation.sampleapp.MQNavigationSampleApplication;
 import com.mapquest.navigation.sampleapp.Methods.FetchCloudData;
 import com.mapquest.navigation.sampleapp.Methods.iconfromString;
+import com.mapquest.navigation.sampleapp.Models.Input;
 import com.mapquest.navigation.sampleapp.Models.Item;
 import com.mapquest.navigation.sampleapp.Models.Output;
 import com.mapquest.navigation.sampleapp.Models.Step;
@@ -79,7 +83,15 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import net.cachapa.expandablelayout.ExpandableLayout;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -189,6 +201,8 @@ public class RouteSelectionActivity extends AppCompatActivity
 
     static SlidingUpPanelLayout slidingUpPanelLayout;
     static RecyclerView link;
+
+   static boolean havetrial=false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -914,16 +928,8 @@ public class RouteSelectionActivity extends AppCompatActivity
  //           enableButton(mStartButton, true);
 
             try {
-                String result= new FetchCloudData().execute(getApplicationContext(),originCord,dstnCord,route,interval,timezone,time).get().toString();
-
-                Output output=new Gson().fromJson(result,Output.class);
-                System.out.println(output);
-                puttomap(output);
-
-
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
+               new FetchCloudData().execute(getApplicationContext(),originCord,dstnCord,route,interval,timezone,time);
+               }catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -1003,4 +1009,89 @@ public class RouteSelectionActivity extends AppCompatActivity
 //        }
 //    }
 //..................................................................................................
+
+    class FetchCloudData extends AsyncTask<Object,Object,String> {
+
+        Context context;
+        Coordinate origincord,dstncord;
+        long route=0;
+        long interval=50000;
+        String timezone="";
+        long time=0;
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+
+            Output output=new Gson().fromJson(result,Output.class);
+            System.out.println(output);
+            puttomap(output);
+
+        }
+
+
+
+        @Override
+        protected String doInBackground(Object[] objects) {
+            context= (Context) objects[0];
+            origincord= (Coordinate) objects[1];
+            dstncord =(Coordinate)objects[2];
+            route=(long)objects[3];
+            interval=(long)objects[4];
+            timezone=(String)objects[5];
+            time=(long)objects[6];
+
+            try {
+                ConnectivityManager mgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+                NetworkInfo netInfo = mgr.getActiveNetworkInfo();
+
+                if (netInfo != null && netInfo.isConnected()) {
+                    HttpClient client = new DefaultHttpClient();
+                    HttpResponse response = null;
+                    String url="https://ou4ptj7z2b.execute-api.ap-south-1.amazonaws.com/dev";
+
+                    HttpPost request = new HttpPost(url);
+
+                    Input input=new Input();
+                    input.setOrigin(new com.mapquest.navigation.sampleapp.Models.LatLng(((float) origincord.getLatitude()), ((float) origincord.getLongitude())));
+                    input.setDestination(new com.mapquest.navigation.sampleapp.Models.LatLng(((float)dstncord.getLatitude()),((float)dstncord.getLongitude())));
+                    input.setRoute(route);
+                    input.setInterval(interval);
+                    input.setTimeZone(timezone);
+                    input.setTime(time);
+
+
+                    String json =new Gson().toJson(input);
+                    System.out.println("hre is json :\n"+json);
+                    StringEntity entity = new StringEntity(json);
+                    request.setEntity(entity);
+                    request.setHeader("Accept", "application/json");
+                    request.setHeader("Content-type", "application/json");
+
+
+                    BufferedReader rd=null;
+
+                    response = client.execute(request);
+                    rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+                    String line="";
+                    StringBuilder sb=new StringBuilder();
+                    while ((line=rd.readLine())!=null){
+                        sb.append(line);
+                    }
+                    return sb.toString();
+                }else{
+                    return "NoInternet";
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+
+        }
+
+
+
+    }
+
 }

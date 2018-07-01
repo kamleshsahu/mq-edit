@@ -33,4 +33,19 @@
     <string name="user_tracking_consent_dialog_message">Get consent here after clearly indicating that this app will collect precise location data when app is actively navigating and will be shared with third parties for their independent use.</string>
     <string name="user_tracking_consent_dialog_negative_button_text">No</string>
     <string name="user_tracking_consent_dialog_positive_button_text">Yes</string>
+
+    <string name="subscription_period_prompt">Select your subscription period</string>
+    <string name="subscription_resignup_prompt">To reactivate your subscription, select your subscription period</string>
+    <string name="subscription_update_prompt">To change your subscription, select your new subscription period</string>
+    <string name="subscription_period_monthly">Monthly</string>
+    <string name="subscription_period_quaterly">Quarterly</string>
+    <string name="subscription_period_halfyearly">Half-Yearly</string>
+    <string name="subscription_period_yearly">Yearly</string>
+    <string name="subscription_prompt_continue">Continue</string>
+    <string name="subscription_prompt_cancel">Cancel</string>
+    <string name="content_description_app_loading_image">App loading image</string>
+    <string name="content_description_title_image">80\'s Video Game Style Car Logo</string>
+    <string name="content_desc_gas_gauge_indicator">Gas gauge indicator</string>
+    <string name="content_desc_free_vs_premium_indicator">Free or Premium Image Indicator</string>
+
 </resources>
