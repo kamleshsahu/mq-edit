@@ -39,6 +39,9 @@ import static android.view.View.GONE;
 //import static com.MsoftTexas.WeatherOnMyTripRoute.MapActivity.TRIALY_SKU;
 //import static com.MsoftTexas.WeatherOnMyTripRoute.MapActivity.base64EncodedPublicKey;
 //import static com.MsoftTexas.WeatherOnMyTripRoute.MapActivity.havetrial;
+import static com.mapquest.navigation.sampleapp.activity.RouteSelectionActivity.TRIALY_APP_KEY;
+import static com.mapquest.navigation.sampleapp.activity.RouteSelectionActivity.TRIALY_SKU;
+import static com.mapquest.navigation.sampleapp.activity.RouteSelectionActivity.base64EncodedPublicKey;
 import static com.mapquest.navigation.sampleapp.activity.RouteSelectionActivity.havetrial;
 import static io.trialy.library.Constants.STATUS_TRIAL_JUST_ENDED;
 import static io.trialy.library.Constants.STATUS_TRIAL_JUST_STARTED;
@@ -108,9 +111,9 @@ public class Subscription extends AppCompatActivity implements IabBroadcastRecei
 
     Boolean buySubs=false;
 
-   String TRIALY_APP_KEY = "CNXFXUSWNXNREPZN6FW"; //TODO: Replace with your app key, which can be found on your Trialy developer dashboard
-   String TRIALY_SKU = "t2_test"; //TODO: Replace with a trial SKU, which can be found on your Trialy developer dashboard. Each app can have multiple trials
-   String base64EncodedPublicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnh6LDOmwwPSQ8KesBlRQ/LrN/75xUFQhVmvfJG6uUlmgxU4iWiMzwr1iydveIz3cNT2C1IdnBpohHuDhn9RlOn5uaR3Cw0BDGrnRzwHZRPdoJ3/tAWIS+cLD/5LU7sriMOi6spMaPTYjgrT/Lck36goPwY88FK+e2G09cFrd54WQBPwHO+COKlKOFQ7Yt9yiCLlwivhdSDbacuVGg696JjAeTBvnw0eqks7Q/FHg2U0TlhBf/RU2+tvCnR2L0hk1kgkkdZFua8aDrZ1xQkEkBzlrrHrGnmqCyVoPHwMcxoOKM61BX511NMRuBJv9Eg19n4QITqT/fsR7vzmnljjxLQIDAQAB" ;
+//   String TRIALY_APP_KEY = "CNXFXUSWNXNREPZN6FW"; //TODO: Replace with your app key, which can be found on your Trialy developer dashboard
+//   String TRIALY_SKU = "t2_test"; //TODO: Replace with a trial SKU, which can be found on your Trialy developer dashboard. Each app can have multiple trials
+//   String base64EncodedPublicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnh6LDOmwwPSQ8KesBlRQ/LrN/75xUFQhVmvfJG6uUlmgxU4iWiMzwr1iydveIz3cNT2C1IdnBpohHuDhn9RlOn5uaR3Cw0BDGrnRzwHZRPdoJ3/tAWIS+cLD/5LU7sriMOi6spMaPTYjgrT/Lck36goPwY88FK+e2G09cFrd54WQBPwHO+COKlKOFQ7Yt9yiCLlwivhdSDbacuVGg696JjAeTBvnw0eqks7Q/FHg2U0TlhBf/RU2+tvCnR2L0hk1kgkkdZFua8aDrZ1xQkEkBzlrrHrGnmqCyVoPHwMcxoOKM61BX511NMRuBJv9Eg19n4QITqT/fsR7vzmnljjxLQIDAQAB" ;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -670,7 +673,7 @@ public class Subscription extends AppCompatActivity implements IabBroadcastRecei
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
             finish();
-            System.exit(0);
+           // System.exit(0);
 
             }
         super.onBackPressed();

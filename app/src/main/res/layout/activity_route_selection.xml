@@ -66,6 +66,15 @@
             android:text="START NAV"
             android:visibility="gone"/>
 
+        <Button
+            android:id="@+id/btnSubsc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="SubscribtionPage"
+            android:text="Subsc"
+            />
+
     </LinearLayout>
 
 <RelativeLayout

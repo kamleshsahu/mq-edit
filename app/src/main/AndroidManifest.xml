@@ -38,6 +38,6 @@
             android:stopWithTask="true"/>
          <activity android:name=".activity.SelectPlace"></activity>
          <activity android:name=".activity.Subscription"></activity>
-    </application>
+    </application>e
 
 </manifest>

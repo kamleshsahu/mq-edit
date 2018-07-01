@@ -6,6 +6,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
@@ -75,7 +76,12 @@ import com.mapquest.navigation.sampleapp.location.CurrentLocationProvider;
 import com.mapquest.navigation.sampleapp.searchahead.SearchAheadFragment;
 import com.mapquest.navigation.sampleapp.searchahead.SearchBarView;
 import com.mapquest.navigation.sampleapp.service.NavigationNotificationService;
+import com.mapquest.navigation.sampleapp.util.IabBroadcastReceiver;
+import com.mapquest.navigation.sampleapp.util.IabHelper;
+import com.mapquest.navigation.sampleapp.util.IabResult;
+import com.mapquest.navigation.sampleapp.util.Inventory;
 import com.mapquest.navigation.sampleapp.util.LocationUtil;
+import com.mapquest.navigation.sampleapp.util.Purchase;
 import com.mapquest.navigation.util.ShapeSegmenter;
 import com.podcopic.animationlib.library.AnimationType;
 import com.podcopic.animationlib.library.StartSmartAnimation;
@@ -102,15 +108,24 @@ import java.util.concurrent.ExecutionException;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.trialy.library.Trialy;
+import io.trialy.library.TrialyCallback;
 
 import static com.mapquest.navigation.sampleapp.util.ColorUtil.getCongestionColor;
 import static com.mapquest.navigation.sampleapp.util.ColorUtil.setOpacity;
 import static com.mapquest.navigation.sampleapp.util.MapUtils.toMapQuestLatLng;
 import static com.mapquest.navigation.sampleapp.util.UiUtil.buildDownArrowMarkerOptions;
 import static com.mapquest.navigation.sampleapp.util.UiUtil.toast;
+import static io.trialy.library.Constants.STATUS_TRIAL_JUST_ENDED;
+import static io.trialy.library.Constants.STATUS_TRIAL_JUST_STARTED;
+import static io.trialy.library.Constants.STATUS_TRIAL_NOT_YET_STARTED;
+import static io.trialy.library.Constants.STATUS_TRIAL_OVER;
+import static io.trialy.library.Constants.STATUS_TRIAL_RUNNING;
 
 public class RouteSelectionActivity extends AppCompatActivity
-        implements CurrentLocationProvider, SearchAheadFragment.OnSearchResultSelectedListener {
+        implements CurrentLocationProvider
+        , SearchAheadFragment.OnSearchResultSelectedListener
+        , IabBroadcastReceiver.IabBroadcastListener{
 
     private static final String TAG = LogUtil.generateLoggingTag(RouteSelectionActivity.class);
 
@@ -126,7 +141,7 @@ public class RouteSelectionActivity extends AppCompatActivity
 
     private static final String SEARCH_AHEAD_FRAGMENT_TAG = "tag_search_ahead_fragment";
 
-    private static final String SHARED_PREFERENCE_NAME = "com.mapquest.navigation.sampleapp.activity.RouteSelectionActivity";
+    private static final String SHARED_PREFERENCE_NAME = "com.kamlesh.mapquest.activity.RouteSelectionActivity";
     private static final String USER_TRACKING_CONSENT_KEY = "user_tracking_consent";
 
     static SharedPreferences sd;
@@ -202,7 +217,26 @@ public class RouteSelectionActivity extends AppCompatActivity
     static SlidingUpPanelLayout slidingUpPanelLayout;
     static RecyclerView link;
 
-   static boolean havetrial=false;
+    static String TRIALY_APP_KEY = "Z3P6OFOXJYPFGZHIVEX"; //TODO: Replace with your app key, which can be found on your Trialy developer dashboard
+    static String TRIALY_SKU = "t2_test"; //TODO: Replace with a trial SKU, which can be found on your Trialy developer dashboard. Each app can have multiple trials
+    static String base64EncodedPublicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwv07/4K0h67uPlJLcYW0cH70JfX2Ac8IX2aQzjIi9mR42RD18jhlt9wnNhCwasuMT5eOFDEOYM7mHgEWqO5TpPKAsx9peImuX8xdEftZkuMs3xxsOl1mUQAdkgm/siYv0CKpx2mIfaFKT8moAvjogPMrgHwwcSGTRmgLoZPTeRYqImwoDMk22LX7agstU9AoBFo3XSLpKCWdNbFvYtb8oMDPQsfbrsf45a3ZEA6zmYRwQt+zzVaOErqgyxqwFQ8vT54vEQ5nf3FNOUBwBoP+a39tEDFtrLLPBNWhbgym0hj1AYJsTJoTqXR5grfqmCkDdRCAVUQ/x2GqZXHvhtYMdwIDAQAB" ;
+
+    IabHelper mHelper;
+
+    // Provides purchase notification while this app is running
+    IabBroadcastReceiver mBroadcastReceiver;
+    Trialy mTrialy;
+
+    String SKU_INFINITE_GAS_MONTHLY = "infinite_gas_monthly";
+    String SKU_INFINITE_GAS_QUATERLY = "quaterly";
+    String SKU_INFINITE_GAS_HALFYEARLY = "halfyearly";
+    String SKU_INFINITE_GAS_YEARLY = "infinite_gas_yearly";
+
+    boolean mSubscribedToInfiniteGas = true;
+    boolean mAutoRenewEnabled = false;
+    static boolean havetrial=true;
+    String mInfiniteGasSku = "";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -210,6 +244,9 @@ public class RouteSelectionActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_route_selection);
+
+        mTrialy = new Trialy(this, TRIALY_APP_KEY);
+        mTrialy.checkTrial(TRIALY_SKU, mTrialyCallback);
 //Expandable view...................................................................................
         final ExpandableLayout expandableLayout=findViewById(R.id.expandable_layout);
         final Handler handler = new Handler();
@@ -440,6 +477,52 @@ public class RouteSelectionActivity extends AppCompatActivity
         mClearRoutesButton.setVisibility(View.GONE);
         enableButton(mRetrieveRoutesButton, false);
         enableButton(mStartButton, false);
+
+
+        Log.d(TAG, "Creating IAB helper.");
+        mHelper = new IabHelper(this, base64EncodedPublicKey);
+
+        // enable debug logging (for a production application, you should set this to false).
+        mHelper.enableDebugLogging(true);
+
+        // Start setup. This is asynchronous and the specified listener
+        // will be called once setup completes.
+        Log.d(TAG, "Starting setup.");
+        mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
+            public void onIabSetupFinished(IabResult result) {
+                Log.d(TAG, "Setup finished.");
+
+                if (!result.isSuccess()) {
+                    // Oh noes, there was a problem.
+                    complain("Problem setting up in-app billing: " + result);
+                    return;
+                }
+
+                // Have we been disposed of in the meantime? If so, quit.
+                if (mHelper == null) return;
+
+                // Important: Dynamically register for broadcast messages about updated purchases.
+                // We register the receiver here instead of as a <receiver> in the Manifest
+                // because we always call getPurchases() at startup, so therefore we can ignore
+                // any broadcasts sent while the app isn't running.
+                // Note: registering this listener in an Activity is a bad idea, but is done here
+                // because this is a SAMPLE. Regardless, the receiver must be registered after
+                // IabHelper is setup, but before first call to getPurchases().
+                mBroadcastReceiver = new IabBroadcastReceiver(RouteSelectionActivity.this);
+                IntentFilter broadcastFilter = new IntentFilter(IabBroadcastReceiver.ACTION);
+                registerReceiver(mBroadcastReceiver, broadcastFilter);
+
+                // IAB is fully set up. Now, let's get an inventory of stuff we own.
+                Log.d(TAG, "Setup successful. Querying inventory.");
+                try {
+                    mHelper.queryInventoryAsync(mGotInventoryListener);
+                } catch (IabHelper.IabAsyncInProgressException e) {
+                    complain("Error querying inventory. Another async operation in progress.");
+                }
+            }
+        });
+
+
     }
 
     private void requestLocationPermissions(LocationPermissionsResultListener permissionsResultListener) {
@@ -480,6 +563,10 @@ public class RouteSelectionActivity extends AppCompatActivity
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
+    }
+
+    public void SubscribtionPage(View view) {
+        startActivity(new Intent(RouteSelectionActivity.this,Subscription.class));
     }
 
     protected interface LocationPermissionsResultListener {
@@ -1089,9 +1176,135 @@ public class RouteSelectionActivity extends AppCompatActivity
             return null;
 
         }
+    }
 
+    IabHelper.QueryInventoryFinishedListener mGotInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
+        public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
+            Log.d("TAG", "Query inventory finished.");
+
+            // Have we been disposed of in the meantime? If so, quit.
+            if (mHelper == null) return;
+
+            // Is it a failure?
+            if (result.isFailure()) {
+                complain("Failed to query inventory: " + result);
+                return;
+            }
+
+            Log.d("TAG", "Query inventory was successful.");
+
+            /*
+             * Check for items we own. Notice that for each purchase, we check
+             * the developer payload to see if it's correct! See
+             * verifyDeveloperPayload().
+             */
+
+            // Do we have the premium upgrade?
+//            Purchase premiumPurchase = inventory.getPurchase(SKU_PREMIUM);
+//            mIsPremium = (premiumPurchase != null && verifyDeveloperPayload(premiumPurchase));
+//            Log.d(TAG, "User is " + (mIsPremium ? "PREMIUM" : "NOT PREMIUM"));
+
+            // First find out which subscription is auto renewing
+            Purchase gasMonthly = inventory.getPurchase(SKU_INFINITE_GAS_MONTHLY);
+            Purchase gasQuaterly = inventory.getPurchase(SKU_INFINITE_GAS_QUATERLY);
+            Purchase gasHalfYearly = inventory.getPurchase(SKU_INFINITE_GAS_HALFYEARLY);
+            Purchase gasYearly = inventory.getPurchase(SKU_INFINITE_GAS_YEARLY);
+            if (gasMonthly != null && gasMonthly.isAutoRenewing()) {
+                mInfiniteGasSku = SKU_INFINITE_GAS_MONTHLY;
+                mAutoRenewEnabled = true;
+            }else if (gasQuaterly != null && gasQuaterly.isAutoRenewing()) {
+                mInfiniteGasSku = SKU_INFINITE_GAS_QUATERLY;
+                mAutoRenewEnabled = true;
+            }else if (gasHalfYearly!= null && gasHalfYearly.isAutoRenewing()) {
+                mInfiniteGasSku = SKU_INFINITE_GAS_HALFYEARLY;
+                mAutoRenewEnabled = true;
+            }
+            else if (gasYearly != null && gasYearly.isAutoRenewing()) {
+                mInfiniteGasSku = SKU_INFINITE_GAS_YEARLY;
+                mAutoRenewEnabled = true;
+            } else {
+                mInfiniteGasSku = "";
+                mAutoRenewEnabled = false;
+            }
+
+            // The user is subscribed if either subscription exists, even if neither is auto
+            // renewing
+            mSubscribedToInfiniteGas = (gasMonthly != null && verifyDeveloperPayload(gasMonthly))
+                    || (gasQuaterly != null && verifyDeveloperPayload(gasQuaterly))
+                    || (gasHalfYearly != null && verifyDeveloperPayload(gasHalfYearly))
+                    || (gasYearly != null && verifyDeveloperPayload(gasYearly));
+            Log.d("TAG", "User " + (mSubscribedToInfiniteGas ? "HAS" : "DOES NOT HAVE")
+                    + " infinite gas subscription.");
+            haveTrialorSubs();
+
+        }
+    };
+
+    @Override
+    public void receivedBroadcast() {
+        // Received a broadcast notification that the inventory of items has changed
+        Log.d("TAG", "Received broadcast notification. Querying inventory.");
+        try {
+            mHelper.queryInventoryAsync(mGotInventoryListener);
+        } catch (IabHelper.IabAsyncInProgressException e) {
+            complain("Error querying inventory. Another async operation in progress.");
+        }
+    }
+
+    private TrialyCallback mTrialyCallback = new TrialyCallback() {
+        @Override
+        public void onResult(int status, long timeRemaining, String sku) {
+            switch (status){
+                case STATUS_TRIAL_JUST_STARTED:
+
+                    break;
+                case STATUS_TRIAL_RUNNING:
+
+                    break;
+                case STATUS_TRIAL_JUST_ENDED:
+                    havetrial=false;
+                    haveTrialorSubs();
+                    break;
+                case STATUS_TRIAL_NOT_YET_STARTED:
+                    havetrial=false;
+                    haveTrialorSubs();
+                    break;
+                case STATUS_TRIAL_OVER:
+                    havetrial=false;
+                    haveTrialorSubs();
+                    break;
+            }
+            Log.i("TRIALY", "Returned status: " + Trialy.getStatusMessage(status));
+        }
+
+    };
+
+    void complain(String message) {
+        Log.e("TAG", "**** TrivialDrive Error: " + message);
+        alert("Error: " + message);
+    }
+
+    void alert(String message) {
+        android.app.AlertDialog.Builder bld = new android.app.AlertDialog.Builder(this);
+        bld.setMessage(message);
+        bld.setNeutralButton("OK", null);
+        Log.d("TAG", "Showing alert dialog: " + message);
+        bld.create().show();
 
 
     }
+
+    boolean verifyDeveloperPayload(Purchase p) {
+        String payload = p.getDeveloperPayload();
+        return true;
+    }
+
+    void haveTrialorSubs(){
+        if(!havetrial && !mSubscribedToInfiniteGas) {
+            startActivity(new Intent(RouteSelectionActivity.this, Subscription.class));
+            finish();
+        }
+    }
+
 
 }

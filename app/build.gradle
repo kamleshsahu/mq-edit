@@ -1,6 +1,6 @@
 apply plugin: 'com.android.application'
 
-def defaultAppVersionCode = '2'
+def defaultAppVersionCode = '3'
 def appVersionCode = System.getProperty('versionCode', defaultAppVersionCode).toInteger()
 
 repositories {
@@ -14,7 +14,7 @@ android {
 
     defaultConfig {
      //   applicationId "com.mapquest.navigation.sampleapp"
-        applicationId "com.kamlesh.mapquest"
+        applicationId "com.kamlesh.mapquestapp"
         minSdkVersion 16
         targetSdkVersion 27
         versionCode appVersionCode
