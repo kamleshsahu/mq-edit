@@ -102,6 +102,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -207,14 +208,14 @@ public class RouteSelectionActivity extends AppCompatActivity
     static Destination dstnCord;
     DatePicker datePicker;
     TimePicker timePicker;
-    CardView datePickerr,timePickerr;
+    CardView datePickerCV,timePickerCV;
 
     TextView date;
-    TextView timee;
+    TextView time;
     long route=0;
     long interval=50000;
-    String timezone="America.Denver";
-    long time=0;
+    String timezone="";
+ 
 
     static SlidingUpPanelLayout slidingUpPanelLayout;
     static RecyclerView link;
@@ -239,7 +240,10 @@ public class RouteSelectionActivity extends AppCompatActivity
     static boolean havetrial=true;
     String mInfiniteGasSku = "";
 
-
+    final String[] MONTH = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+    static long jstart_time_millis;
+    int day,month,year,hour,min;
+     ExpandableLayout expandableLayout;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate()");
@@ -250,7 +254,8 @@ public class RouteSelectionActivity extends AppCompatActivity
         mTrialy = new Trialy(this, TRIALY_APP_KEY);
         mTrialy.checkTrial(TRIALY_SKU, mTrialyCallback);
 //Expandable view...................................................................................
-        final ExpandableLayout expandableLayout=findViewById(R.id.expandable_layout);
+
+        expandableLayout = findViewById(R.id.expandable_layout);
         final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
@@ -271,29 +276,38 @@ public class RouteSelectionActivity extends AppCompatActivity
 //Date and Time Picker..............................................................................
         datePicker=findViewById(R.id.datepicker);
         timePicker=findViewById(R.id.timepicker);
-        datePickerr=findViewById(R.id.datepickerr);
-        timePickerr=findViewById(R.id.timepickerr);
+        datePickerCV=findViewById(R.id.datepickerCV);
+        timePickerCV=findViewById(R.id.timepickerCV);
         date=findViewById(R.id.date);
-        timee=findViewById(R.id.time);
+        time=findViewById(R.id.time);
 
-        int day = datePicker.getDayOfMonth();
-        int month = datePicker.getMonth() + 1;
-        int year = datePicker.getYear();
+        day = datePicker.getDayOfMonth();
+        month = datePicker.getMonth() + 1;
+        year = datePicker.getYear();
 
-        final String[] MONTHS = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
-        date.setText(","+day+" "+MONTHS[month]+" "+String.valueOf(year).replace("20",""));
 
-        int hour = timePicker.getCurrentHour();
-        int min = timePicker.getCurrentMinute();
+        date.setText(","+day+" "+MONTH[month]+" "+String.valueOf(year).replace("20",""));
+
+        hour = timePicker.getCurrentHour();
+        min = timePicker.getCurrentMinute();
         String minute = null;
 
         if (min<10){
             minute="0"+String.valueOf(min);
 
-            timee.setText(hour+":"+minute);
+            time.setText(hour+":"+minute);
         }else
-            timee.setText(hour+":"+min);
+            time.setText(hour+":"+min);
+
+        final Calendar c = Calendar.getInstance();
+        timezone=c.getTimeZone().getID();
+        if(timezone.contains("/")){
+            timezone=timezone.replace("/",".");
+        }
+        jstart_time_millis=c.getTimeInMillis();
+
+
 
         findViewById(R.id.datepickerclicker).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -302,19 +316,22 @@ public class RouteSelectionActivity extends AppCompatActivity
                     @Override
                     public void run() {
                         //Do something after 100ms
-                        datePickerr.setVisibility(View.VISIBLE);
+                        datePickerCV.setVisibility(View.VISIBLE);
                         findViewById(R.id.datecheck).setVisibility(View.VISIBLE);
                     }
                 }, 300);
 
 
-                StartSmartAnimation.startAnimation( datePickerr , AnimationType.SlideInDown , 700 , 0 , true );
+                StartSmartAnimation.startAnimation( datePickerCV , AnimationType.SlideInDown , 700 , 0 , true );
                 StartSmartAnimation.startAnimation( findViewById(R.id.datecheck) , AnimationType.SlideInUp , 700 , 0 , true );
 
-                datePicker.setMinDate(System.currentTimeMillis() - 1000);
+           //     datePicker.setMinDate(System.currentTimeMillis() - 1000);
 
             }
         });
+
+
+
         findViewById(R.id.datecheck).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -322,20 +339,27 @@ public class RouteSelectionActivity extends AppCompatActivity
                     @Override
                     public void run() {
                         //Do something after 100ms
-                        timePickerr.setVisibility(View.VISIBLE);
-                        datePickerr.setVisibility(View.GONE);
+                        timePickerCV.setVisibility(View.VISIBLE);
+                        datePickerCV.setVisibility(View.GONE);
                     }
                 }, 700);
-                StartSmartAnimation.startAnimation( datePickerr , AnimationType.SlideOutUp , 700 , 0 , true );
-                StartSmartAnimation.startAnimation( timePickerr , AnimationType.SlideInDown , 1000 , 0 , true );
+                StartSmartAnimation.startAnimation( datePickerCV , AnimationType.SlideOutUp , 700 , 0 , true );
+                StartSmartAnimation.startAnimation( timePickerCV , AnimationType.SlideInDown , 1000 , 0 , true );
                 findViewById(R.id.timecheck).setVisibility(View.VISIBLE);
                 StartSmartAnimation.startAnimation(     findViewById(R.id.timecheck), AnimationType.SlideInUp , 0 , 0 , true );
-                int day = datePicker.getDayOfMonth();
-                int month = datePicker.getMonth() + 1;
-                int year = datePicker.getYear();
-                final String[] MONTHS = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+                day = datePicker.getDayOfMonth();
+                month = datePicker.getMonth() + 1;
+                year = datePicker.getYear();
+                date.setText(","+day+" "+MONTH[month]+" "+String.valueOf(year).replace("20",""));
 
-                date.setText(","+day+" "+MONTHS[month]+" "+String.valueOf(year).replace("20",""));
+                Calendar cal = Calendar.getInstance();
+                cal.set(Calendar.DAY_OF_MONTH,day);
+                cal.set(Calendar.MONTH,month-1);
+                cal.set(Calendar.YEAR, year);
+                cal.set(Calendar.HOUR_OF_DAY,0);
+                cal.set(Calendar.MINUTE,0);
+
+                jstart_time_millis=cal.getTimeInMillis();
                 findViewById(R.id.datecheck).setVisibility(View.GONE);
 
 
@@ -349,21 +373,23 @@ public class RouteSelectionActivity extends AppCompatActivity
                     @Override
                     public void run() {
                         //Do something after 100ms
-                        timePickerr.setVisibility(View.GONE);
+                        timePickerCV.setVisibility(View.GONE);
                         findViewById(R.id.timecheck).setVisibility(View.GONE);
                     }
                 }, 700);
 
-                StartSmartAnimation.startAnimation( timePickerr , AnimationType.SlideOutUp , 700 , 0 , true );
+                StartSmartAnimation.startAnimation( timePickerCV , AnimationType.SlideOutUp , 700 , 0 , true );
                 StartSmartAnimation.startAnimation( findViewById(R.id.timecheck) , AnimationType.SlideOutDown , 700 , 0 , true );
-                int hour = timePicker.getCurrentHour();
-                int min = timePicker.getCurrentMinute();
+                hour = timePicker.getCurrentHour();
+                min = timePicker.getCurrentMinute();
                 String minute = null;
                 if (min<10){
                     minute="0"+String.valueOf(min);
-                    timee.setText(hour+":"+minute);
+                    time.setText(hour+":"+minute);
                 }else
-                    timee.setText(hour+":"+min);
+                    time.setText(hour+":"+min);
+
+                jstart_time_millis+=(hour*60+min)*60*1000;
             }
 
         });
@@ -463,16 +489,7 @@ public class RouteSelectionActivity extends AppCompatActivity
         Go.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (originCord==null||dstnCord==null){
-                    Toast.makeText(mApp, "Please Enter Source & Destination.", Toast.LENGTH_SHORT).show();
-                }else {
-                    expandableLayout.toggle();
-                    mDestinationLocations = new ArrayList<>();
-                    mDestinationLocations.add(dstnCord);
-                    retrieveRouteFromStartingLocationToDestinations(originCord, mDestinationLocations);
-                    markOrigin(originCord);
-                    addDestinationToRoute(dstnCord, dstnCord.getMqId());
-                }
+               requestData();
 
             }});
 
@@ -534,6 +551,22 @@ public class RouteSelectionActivity extends AppCompatActivity
 
 
     }
+
+    private void requestData(){
+        if (originCord==null&&dstnCord==null){
+            Toast.makeText(mApp, "Please Enter Source & Destination.", Toast.LENGTH_SHORT).show();
+        }else {
+            mMapController.clear();
+            expandableLayout.toggle();
+            mDestinationLocations = new ArrayList<>();
+            mDestinationLocations.add(dstnCord);
+            retrieveRouteFromStartingLocationToDestinations(originCord, mDestinationLocations);
+            markOrigin(originCord);
+            addDestinationToRoute(dstnCord, dstnCord.getMqId());
+
+        };
+    }
+
 
     private void requestLocationPermissions(LocationPermissionsResultListener permissionsResultListener) {
         this.locationPermissionsResultListener = permissionsResultListener;
@@ -1023,7 +1056,7 @@ public class RouteSelectionActivity extends AppCompatActivity
  //           enableButton(mStartButton, true);
 
             try {
-               new FetchCloudData().execute(getApplicationContext(),originCord,dstnCord,route,interval,timezone,time);
+               new FetchCloudData().execute(getApplicationContext(),originCord,dstnCord,route,interval,timezone,jstart_time_millis);
                }catch (Exception e) {
                 e.printStackTrace();
             }
@@ -1054,20 +1087,21 @@ public class RouteSelectionActivity extends AppCompatActivity
 
 
     public void puttomap(Output output){
-        List <Step> steps=output.getSteps();
-        link.setAdapter(new DragupListAdapter(getApplicationContext(), output.getSteps()));
-  //      if (route.getLegs().get(0).getDuration().getText() != null) {
+        if(output != null) {
+            List<Step> steps = output.getSteps();
+            link.setAdapter(new DragupListAdapter(getApplicationContext(), output.getSteps()));
+            //      if (route.getLegs().get(0).getDuration().getText() != null) {
             slidingUpPanelLayout.setPanelHeight(getApplicationContext().getResources().getDimensionPixelSize(R.dimen.dragupsize));
-  //     }
-        for(int k=0;k<steps.size();k++){
-            markLocationwithIcon(new LatLng(steps.get(k).getStep().getStartPoint().getLat(),steps.get(k).getStep().getStartPoint().getLng()), R.color.marker_orange,steps.get(k).getWlist().getIcon());
-        }
+            //     }
+            for (int k = 0; k < steps.size(); k++) {
+                markLocationwithIcon(new LatLng(steps.get(k).getStep().getStartPoint().getLat(), steps.get(k).getStep().getStartPoint().getLng()), R.color.marker_orange, steps.get(k).getWlist().getIcon());
+            }
 
-        List <Item> interm=output.getItems();
-        for(int k=0;k<interm.size();k++){
-            markLocationwithIcon(new LatLng(interm.get(k).getPoint().getLat(),interm.get(k).getPoint().getLng()), R.color.marker_blue,interm.get(k).getWlist().getIcon());
+            List<Item> interm = output.getItems();
+            for (int k = 0; k < interm.size(); k++) {
+                markLocationwithIcon(new LatLng(interm.get(k).getPoint().getLat(), interm.get(k).getPoint().getLng()), R.color.marker_blue, interm.get(k).getWlist().getIcon());
+            }
         }
-
     }
 
 //    private void initGpsButton() {
@@ -1331,30 +1365,32 @@ public class RouteSelectionActivity extends AppCompatActivity
         switch (item.getItemId()) {
             case R.id.km20:
                 item.setChecked(true);
-                //MapActivity.interval=20000;
+                interval=20000;
                 return true;
             case R.id.km30:
                 item.setChecked(true);
-                // MapActivity.interval=30000;
+                interval=30000;
                 Toast.makeText(this, "30km", Toast.LENGTH_SHORT).show();
                 return true;
             case R.id.km40:
                 item.setChecked(true);
-                // MapActivity.interval=40000;
+                interval=40000;
                 return true;
             case R.id.km50:
                 item.setChecked(true);
-                // MapActivity.interval=50000;
+                interval=50000;
                 return true;
             case R.id.action_retry:
-                //requestDirection();
+                expandableLayout.toggle();
+                requestData();
                 Toast.makeText(this, "Retrying...", Toast.LENGTH_SHORT).show();
                 return true;
             case R.id.action_clr:
                 Toast.makeText(this, "clear", Toast.LENGTH_SHORT).show();
-                origin=null;
-                // destination=null;
+                originCord=null;
+                dstnCord=null;
                 recreate();
+                return true;
             case R.id.btnSubsc:
                 startActivity(new Intent(RouteSelectionActivity.this,Subscription.class));
                 return true;
