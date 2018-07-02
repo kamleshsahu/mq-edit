@@ -98,7 +98,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.sql.SQLOutput;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -1109,11 +1109,16 @@ public class RouteSelectionActivity extends AppCompatActivity
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
-
-            Output output=new Gson().fromJson(result,Output.class);
-            System.out.println(output);
-            puttomap(output);
-
+            try {
+                Output output = new Gson().fromJson(result, Output.class);
+                if(output!=null) {
+                    ((TextView)findViewById(R.id.distance)).setText(output.getDistance());
+                    ((TextView)findViewById(R.id.duration)).setText(output.getDuration());
+                    puttomap(output);
+                }
+            }catch (Exception e){
+                e.fillInStackTrace();
+            }
         }
 
 

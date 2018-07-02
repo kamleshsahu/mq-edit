@@ -22,7 +22,7 @@
     android:textColor="@color/loo_pre"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:text="20 hours 11 Minutes"/>
+    android:text="duration"/>
 
             <TextView
                 android:fontFamily="sans-serif-thin"
@@ -35,7 +35,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_toEndOf="@+id/duration"
                 android:layout_toRightOf="@+id/duration"
-                android:text="(1,1125 km)"
+                android:text="time"
                 android:textColor="@color/loo_pre"
                 android:textSize="15dp" />
         <TextView
