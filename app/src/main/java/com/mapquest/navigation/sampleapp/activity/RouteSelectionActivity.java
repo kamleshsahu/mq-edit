@@ -9,6 +9,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -21,6 +24,7 @@ import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
@@ -34,14 +38,18 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
 import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.Icon;
+import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.annotations.PolylineOptions;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
@@ -88,6 +96,7 @@ import com.mapquest.navigation.util.ShapeSegmenter;
 import com.podcopic.animationlib.library.AnimationType;
 import com.podcopic.animationlib.library.StartSmartAnimation;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
+import com.vipul.hp_hp.library.Layout_to_Image;
 
 import net.cachapa.expandablelayout.ExpandableLayout;
 
@@ -971,7 +980,15 @@ public class RouteSelectionActivity extends AppCompatActivity
             if (mOriginMarker != null) {
                 mMapController.removeMarker(mOriginMarker);
             }
-            mOriginMarker = markLocation(toLatLng(location), R.color.marker_green);
+
+
+            mOriginMarker = markLocation(toLatLng(location), R.color.colorAccent);
+//            IconFactory iconFactory = IconFactory.getInstance(getApplicationContext());
+//            Bitmap icon = BitmapFactory.decodeResource(getResources(), R.drawable.chat);
+//            Icon iconbitmap = iconFactory.fromBitmap(icon);
+//            mMapController.addMarker(new MarkerOptions()
+//                    .position(toLatLng(location))
+//                    .icon(iconbitmap));
         }
     }
 
@@ -986,9 +1003,74 @@ public class RouteSelectionActivity extends AppCompatActivity
                 .position(latLng));
     }
 
-    private Marker markLocationwithIcon(LatLng latLng, @ColorRes int fillColorResourceId,String iconname) {
+    private Marker markLocationwithIcon(LatLng latLng, @ColorRes int fillColorResourceId,String iconname,String time) {
+//        IconFactory iconFactory = IconFactory.getInstance(getApplicationContext());
+//               Icon icon=new iconfromString(iconFactory,iconname).getIcon();
+
+// Markers with text.................................................................................
+
+        Layout_to_Image layout_to_image;
+        LinearLayout relativeLayout;
+        TextView step_time,step_weather;
+        ImageView step_icon;
+        //provide layout with its id in Xml
+        relativeLayout=findViewById(R.id.show);
+        step_time=findViewById(R.id.step_time);
+        step_weather=findViewById(R.id.step_weather);
+        step_icon=findViewById(R.id.step_icon);
+        layout_to_image=new Layout_to_Image(getApplicationContext(),relativeLayout);
+        //now call the main working function ;) and hold the returned image in bitmap
+        step_time.setText(time);
+
+        switch (iconname){
+            case "clear_day":step_icon.setBackgroundResource(R.drawable.clear_day);
+                step_weather.setText("Clear Day");
+                break;
+            case "cloudy":step_icon.setBackgroundResource(R.drawable.cloudy);
+                step_weather.setText("Cloudy");
+                break;
+            case "clear-night":step_icon.setBackgroundResource(R.drawable.clear_night);
+                step_weather.setText("Clear Night");
+                break;
+            case "fog":step_icon.setBackgroundResource(R.drawable.fog);
+                step_weather.setText("Fog");
+                break;
+            case "hail":step_icon.setBackgroundResource(R.drawable.hail);
+                step_weather.setText("Hail");
+                break;
+            case "partly-cloudy-day":step_icon.setBackgroundResource(R.drawable.partly_cloudy_day);
+                step_weather.setText("Partly Cloudy Day");
+                break;
+            case "partly-cloudy-night":step_icon.setBackgroundResource(R.drawable.partly_cloudy_night);
+                step_weather.setText("Partly Cloudy Night");
+                break;
+            case "rain":step_icon.setBackgroundResource(R.drawable.rain);
+                step_weather.setText("Rain");
+                break;
+            case "sleet":step_icon.setBackgroundResource(R.drawable.sleet);
+                step_weather.setText("Sleet");
+                break;
+            case "snow":step_icon.setBackgroundResource(R.drawable.snow);
+                step_weather.setText("Snow");
+                break;
+            case "thunderstorm":step_icon.setBackgroundResource(R.drawable.thunderstorm);
+                step_weather.setText("Thunderstorm");
+                break;
+            case "tornado":step_icon.setBackgroundResource(R.drawable.tornado);
+                step_weather.setText("Tornado");
+                break;
+            case "wind":step_icon.setBackgroundResource(R.drawable.wind);
+                step_weather.setText("Wind");
+                break;
+            default:step_icon.setBackgroundResource(R.drawable.clear_day);
+                step_weather.setText("Clear Day");
+        }
+        Bitmap bitmap=layout_to_image.convert_layout();
+//..................................................................................................
+
         IconFactory iconFactory = IconFactory.getInstance(getApplicationContext());
-               Icon icon=new iconfromString(iconFactory,iconname).getIcon();
+        Icon icon = iconFactory.fromBitmap(bitmap);
+
         return mMapController.addMarker(buildDownArrowMarkerOptions(this, fillColorResourceId)
                 .icon(icon)
                 .position(latLng));
@@ -1094,12 +1176,12 @@ public class RouteSelectionActivity extends AppCompatActivity
             slidingUpPanelLayout.setPanelHeight(getApplicationContext().getResources().getDimensionPixelSize(R.dimen.dragupsize));
             //     }
             for (int k = 0; k < steps.size(); k++) {
-                markLocationwithIcon(new LatLng(steps.get(k).getStep().getStartPoint().getLat(), steps.get(k).getStep().getStartPoint().getLng()), R.color.marker_orange, steps.get(k).getWlist().getIcon());
+                markLocationwithIcon(new LatLng(steps.get(k).getStep().getStartPoint().getLat(), steps.get(k).getStep().getStartPoint().getLng()), R.color.marker_orange, steps.get(k).getWlist().getIcon(),steps.get(k).getArrtime());
             }
 
             List<Item> interm = output.getItems();
             for (int k = 0; k < interm.size(); k++) {
-                markLocationwithIcon(new LatLng(interm.get(k).getPoint().getLat(), interm.get(k).getPoint().getLng()), R.color.marker_blue, interm.get(k).getWlist().getIcon());
+                markLocationwithIcon(new LatLng(interm.get(k).getPoint().getLat(), interm.get(k).getPoint().getLng()), R.color.marker_blue, interm.get(k).getWlist().getIcon(),steps.get(k).getArrtime());
             }
         }
     }
