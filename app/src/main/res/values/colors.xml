@@ -2,7 +2,7 @@
 <resources>
     <color name="colorPrimary">#B8CAD5</color>
     <color name="colorPrimaryDark">#333333</color>
-    <color name="colorAccent">#A5CC01</color>
+    <color name="colorAccent">#a5cc01</color>
     <color name="white">#ffffff</color>
 
     <color name="maneuverApproachBarBackground">#666666</color>
