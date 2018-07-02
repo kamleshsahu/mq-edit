@@ -29,4 +29,6 @@
     <color name="black">#000000</color>
 
     <color name="charcoal">#191919</color>
+
+    <color name="loo_pre">#fff</color>
 </resources>

@@ -6,8 +6,12 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -20,6 +24,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.TypedValue;
@@ -56,10 +62,12 @@ import com.mapquest.navigation.model.RouteOptions;
 import com.mapquest.navigation.model.SystemOfMeasurement;
 import com.mapquest.navigation.model.location.Coordinate;
 import com.mapquest.navigation.model.location.Destination;
+import com.mapquest.navigation.sampleapp.Adapters.DragupListAdapter;
 import com.mapquest.navigation.sampleapp.BuildConfig;
 import com.mapquest.navigation.sampleapp.MQNavigationSampleApplication;
 import com.mapquest.navigation.sampleapp.Methods.FetchCloudData;
 import com.mapquest.navigation.sampleapp.Methods.iconfromString;
+import com.mapquest.navigation.sampleapp.Models.Input;
 import com.mapquest.navigation.sampleapp.Models.Item;
 import com.mapquest.navigation.sampleapp.Models.Output;
 import com.mapquest.navigation.sampleapp.Models.Step;
@@ -68,15 +76,29 @@ import com.mapquest.navigation.sampleapp.location.CurrentLocationProvider;
 import com.mapquest.navigation.sampleapp.searchahead.SearchAheadFragment;
 import com.mapquest.navigation.sampleapp.searchahead.SearchBarView;
 import com.mapquest.navigation.sampleapp.service.NavigationNotificationService;
+import com.mapquest.navigation.sampleapp.util.IabBroadcastReceiver;
+import com.mapquest.navigation.sampleapp.util.IabHelper;
+import com.mapquest.navigation.sampleapp.util.IabResult;
+import com.mapquest.navigation.sampleapp.util.Inventory;
 import com.mapquest.navigation.sampleapp.util.LocationUtil;
+import com.mapquest.navigation.sampleapp.util.Purchase;
 import com.mapquest.navigation.util.ShapeSegmenter;
 import com.podcopic.animationlib.library.AnimationType;
 import com.podcopic.animationlib.library.StartSmartAnimation;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import net.cachapa.expandablelayout.ExpandableLayout;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.sql.SQLOutput;
+import java.io.InputStreamReader;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -86,15 +108,24 @@ import java.util.concurrent.ExecutionException;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.trialy.library.Trialy;
+import io.trialy.library.TrialyCallback;
 
 import static com.mapquest.navigation.sampleapp.util.ColorUtil.getCongestionColor;
 import static com.mapquest.navigation.sampleapp.util.ColorUtil.setOpacity;
 import static com.mapquest.navigation.sampleapp.util.MapUtils.toMapQuestLatLng;
 import static com.mapquest.navigation.sampleapp.util.UiUtil.buildDownArrowMarkerOptions;
 import static com.mapquest.navigation.sampleapp.util.UiUtil.toast;
+import static io.trialy.library.Constants.STATUS_TRIAL_JUST_ENDED;
+import static io.trialy.library.Constants.STATUS_TRIAL_JUST_STARTED;
+import static io.trialy.library.Constants.STATUS_TRIAL_NOT_YET_STARTED;
+import static io.trialy.library.Constants.STATUS_TRIAL_OVER;
+import static io.trialy.library.Constants.STATUS_TRIAL_RUNNING;
 
 public class RouteSelectionActivity extends AppCompatActivity
-        implements CurrentLocationProvider, SearchAheadFragment.OnSearchResultSelectedListener {
+        implements CurrentLocationProvider
+        , SearchAheadFragment.OnSearchResultSelectedListener
+        , IabBroadcastReceiver.IabBroadcastListener{
 
     private static final String TAG = LogUtil.generateLoggingTag(RouteSelectionActivity.class);
 
@@ -110,7 +141,7 @@ public class RouteSelectionActivity extends AppCompatActivity
 
     private static final String SEARCH_AHEAD_FRAGMENT_TAG = "tag_search_ahead_fragment";
 
-    private static final String SHARED_PREFERENCE_NAME = "com.mapquest.navigation.sampleapp.activity.RouteSelectionActivity";
+    private static final String SHARED_PREFERENCE_NAME = "com.kamlesh.mapquest.activity.RouteSelectionActivity";
     private static final String USER_TRACKING_CONSENT_KEY = "user_tracking_consent";
 
     static SharedPreferences sd;
@@ -182,12 +213,40 @@ public class RouteSelectionActivity extends AppCompatActivity
     long interval=50000;
     String timezone="America.Denver";
     long time=0;
+
+    static SlidingUpPanelLayout slidingUpPanelLayout;
+    static RecyclerView link;
+
+    static String TRIALY_APP_KEY = "Z3P6OFOXJYPFGZHIVEX"; //TODO: Replace with your app key, which can be found on your Trialy developer dashboard
+    static String TRIALY_SKU = "t2_test"; //TODO: Replace with a trial SKU, which can be found on your Trialy developer dashboard. Each app can have multiple trials
+    static String base64EncodedPublicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwv07/4K0h67uPlJLcYW0cH70JfX2Ac8IX2aQzjIi9mR42RD18jhlt9wnNhCwasuMT5eOFDEOYM7mHgEWqO5TpPKAsx9peImuX8xdEftZkuMs3xxsOl1mUQAdkgm/siYv0CKpx2mIfaFKT8moAvjogPMrgHwwcSGTRmgLoZPTeRYqImwoDMk22LX7agstU9AoBFo3XSLpKCWdNbFvYtb8oMDPQsfbrsf45a3ZEA6zmYRwQt+zzVaOErqgyxqwFQ8vT54vEQ5nf3FNOUBwBoP+a39tEDFtrLLPBNWhbgym0hj1AYJsTJoTqXR5grfqmCkDdRCAVUQ/x2GqZXHvhtYMdwIDAQAB" ;
+
+    IabHelper mHelper;
+
+    // Provides purchase notification while this app is running
+    IabBroadcastReceiver mBroadcastReceiver;
+    Trialy mTrialy;
+
+    String SKU_INFINITE_GAS_MONTHLY = "infinite_gas_monthly";
+    String SKU_INFINITE_GAS_QUATERLY = "quaterly";
+    String SKU_INFINITE_GAS_HALFYEARLY = "halfyearly";
+    String SKU_INFINITE_GAS_YEARLY = "infinite_gas_yearly";
+
+    boolean mSubscribedToInfiniteGas = true;
+    boolean mAutoRenewEnabled = false;
+    static boolean havetrial=true;
+    String mInfiniteGasSku = "";
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_route_selection);
+
+        mTrialy = new Trialy(this, TRIALY_APP_KEY);
+        mTrialy.checkTrial(TRIALY_SKU, mTrialyCallback);
 //Expandable view...................................................................................
         final ExpandableLayout expandableLayout=findViewById(R.id.expandable_layout);
         final Handler handler = new Handler();
@@ -312,21 +371,18 @@ public class RouteSelectionActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+
+        slidingUpPanelLayout=findViewById(R.id.sliding_layout);
+        slidingUpPanelLayout.setPanelHeight(0);
+
+
+        link = (RecyclerView) findViewById(R.id.dragup_list_recycler);
+        link.setLayoutManager(new LinearLayoutManager(this));
+
+
         mApp = (MQNavigationSampleApplication) getApplication();
         mRouteService = new RouteService.Builder().build(getApplicationContext(), BuildConfig.API_KEY);
 
-        // setup search-bar placeholder view; will display search-ahead fragment when clicked
-//        SearchBarView searchBarView = toolbar.findViewById(R.id.fake_search_bar_view);
-//        searchBarView.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                SearchAheadFragment searchAheadFragment = SearchAheadFragment.newInstance();
-//                getSupportFragmentManager().beginTransaction()
-//                            .add(android.R.id.content, searchAheadFragment, SEARCH_AHEAD_FRAGMENT_TAG)
-//                            .addToBackStack(null)
-//                            .commit();
-//            }
-//        });
 
         mMap.onCreate(savedInstanceState);
         mMap.getMapAsync(new OnMapReadyCallback() {
@@ -421,6 +477,52 @@ public class RouteSelectionActivity extends AppCompatActivity
         mClearRoutesButton.setVisibility(View.GONE);
         enableButton(mRetrieveRoutesButton, false);
         enableButton(mStartButton, false);
+
+
+        Log.d(TAG, "Creating IAB helper.");
+        mHelper = new IabHelper(this, base64EncodedPublicKey);
+
+        // enable debug logging (for a production application, you should set this to false).
+        mHelper.enableDebugLogging(true);
+
+        // Start setup. This is asynchronous and the specified listener
+        // will be called once setup completes.
+        Log.d(TAG, "Starting setup.");
+        mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
+            public void onIabSetupFinished(IabResult result) {
+                Log.d(TAG, "Setup finished.");
+
+                if (!result.isSuccess()) {
+                    // Oh noes, there was a problem.
+                    complain("Problem setting up in-app billing: " + result);
+                    return;
+                }
+
+                // Have we been disposed of in the meantime? If so, quit.
+                if (mHelper == null) return;
+
+                // Important: Dynamically register for broadcast messages about updated purchases.
+                // We register the receiver here instead of as a <receiver> in the Manifest
+                // because we always call getPurchases() at startup, so therefore we can ignore
+                // any broadcasts sent while the app isn't running.
+                // Note: registering this listener in an Activity is a bad idea, but is done here
+                // because this is a SAMPLE. Regardless, the receiver must be registered after
+                // IabHelper is setup, but before first call to getPurchases().
+                mBroadcastReceiver = new IabBroadcastReceiver(RouteSelectionActivity.this);
+                IntentFilter broadcastFilter = new IntentFilter(IabBroadcastReceiver.ACTION);
+                registerReceiver(mBroadcastReceiver, broadcastFilter);
+
+                // IAB is fully set up. Now, let's get an inventory of stuff we own.
+                Log.d(TAG, "Setup successful. Querying inventory.");
+                try {
+                    mHelper.queryInventoryAsync(mGotInventoryListener);
+                } catch (IabHelper.IabAsyncInProgressException e) {
+                    complain("Error querying inventory. Another async operation in progress.");
+                }
+            }
+        });
+
+
     }
 
     private void requestLocationPermissions(LocationPermissionsResultListener permissionsResultListener) {
@@ -461,6 +563,10 @@ public class RouteSelectionActivity extends AppCompatActivity
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
+    }
+
+    public void SubscribtionPage(View view) {
+        startActivity(new Intent(RouteSelectionActivity.this,Subscription.class));
     }
 
     protected interface LocationPermissionsResultListener {
@@ -909,16 +1015,8 @@ public class RouteSelectionActivity extends AppCompatActivity
  //           enableButton(mStartButton, true);
 
             try {
-                String result= new FetchCloudData().execute(getApplicationContext(),originCord,dstnCord,route,interval,timezone,time).get().toString();
-
-                Output output=new Gson().fromJson(result,Output.class);
-                System.out.println(output);
-                puttomap(output);
-
-
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
+               new FetchCloudData().execute(getApplicationContext(),originCord,dstnCord,route,interval,timezone,time);
+               }catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -949,6 +1047,10 @@ public class RouteSelectionActivity extends AppCompatActivity
 
     public void puttomap(Output output){
         List <Step> steps=output.getSteps();
+        link.setAdapter(new DragupListAdapter(getApplicationContext(), output.getSteps()));
+  //      if (route.getLegs().get(0).getDuration().getText() != null) {
+            slidingUpPanelLayout.setPanelHeight(getApplicationContext().getResources().getDimensionPixelSize(R.dimen.dragupsize));
+  //     }
         for(int k=0;k<steps.size();k++){
             markLocationwithIcon(new LatLng(steps.get(k).getStep().getStartPoint().getLat(),steps.get(k).getStep().getStartPoint().getLng()), R.color.marker_orange,steps.get(k).getWlist().getIcon());
         }
@@ -994,4 +1096,220 @@ public class RouteSelectionActivity extends AppCompatActivity
 //        }
 //    }
 //..................................................................................................
+
+    class FetchCloudData extends AsyncTask<Object,Object,String> {
+
+        Context context;
+        Coordinate origincord,dstncord;
+        long route=0;
+        long interval=50000;
+        String timezone="";
+        long time=0;
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            try {
+                Output output = new Gson().fromJson(result, Output.class);
+                if(output!=null) {
+                    ((TextView)findViewById(R.id.distance)).setText(output.getDistance());
+                    ((TextView)findViewById(R.id.duration)).setText(output.getDuration());
+                    puttomap(output);
+                }
+            }catch (Exception e){
+                e.fillInStackTrace();
+            }
+        }
+
+
+
+        @Override
+        protected String doInBackground(Object[] objects) {
+            context= (Context) objects[0];
+            origincord= (Coordinate) objects[1];
+            dstncord =(Coordinate)objects[2];
+            route=(long)objects[3];
+            interval=(long)objects[4];
+            timezone=(String)objects[5];
+            time=(long)objects[6];
+
+            try {
+                ConnectivityManager mgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+                NetworkInfo netInfo = mgr.getActiveNetworkInfo();
+
+                if (netInfo != null && netInfo.isConnected()) {
+                    HttpClient client = new DefaultHttpClient();
+                    HttpResponse response = null;
+                 //   String url="https://ou4ptj7z2b.execute-api.ap-south-1.amazonaws.com/dev";
+                    String url ="https://nk0031nuf4.execute-api.ap-south-1.amazonaws.com/dev";
+                    HttpPost request = new HttpPost(url);
+
+                    Input input=new Input();
+                    input.setOrigin(new com.mapquest.navigation.sampleapp.Models.LatLng(((float) origincord.getLatitude()), ((float) origincord.getLongitude())));
+                    input.setDestination(new com.mapquest.navigation.sampleapp.Models.LatLng(((float)dstncord.getLatitude()),((float)dstncord.getLongitude())));
+                    input.setRoute(route);
+                    input.setInterval(interval);
+                    input.setTimeZone(timezone);
+                    input.setTime(time);
+
+
+                    String json =new Gson().toJson(input);
+                    System.out.println("hre is json :\n"+json);
+                    StringEntity entity = new StringEntity(json);
+                    request.setEntity(entity);
+                    request.setHeader("Accept", "application/json");
+                    request.setHeader("Content-type", "application/json");
+
+
+                    BufferedReader rd=null;
+
+                    response = client.execute(request);
+                    rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+                    String line="";
+                    StringBuilder sb=new StringBuilder();
+                    while ((line=rd.readLine())!=null){
+                        sb.append(line);
+                    }
+                    return sb.toString();
+                }else{
+                    return "NoInternet";
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+
+        }
+    }
+
+    IabHelper.QueryInventoryFinishedListener mGotInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
+        public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
+            Log.d("TAG", "Query inventory finished.");
+
+            // Have we been disposed of in the meantime? If so, quit.
+            if (mHelper == null) return;
+
+            // Is it a failure?
+            if (result.isFailure()) {
+                complain("Failed to query inventory: " + result);
+                return;
+            }
+
+            Log.d("TAG", "Query inventory was successful.");
+
+            /*
+             * Check for items we own. Notice that for each purchase, we check
+             * the developer payload to see if it's correct! See
+             * verifyDeveloperPayload().
+             */
+
+            // Do we have the premium upgrade?
+//            Purchase premiumPurchase = inventory.getPurchase(SKU_PREMIUM);
+//            mIsPremium = (premiumPurchase != null && verifyDeveloperPayload(premiumPurchase));
+//            Log.d(TAG, "User is " + (mIsPremium ? "PREMIUM" : "NOT PREMIUM"));
+
+            // First find out which subscription is auto renewing
+            Purchase gasMonthly = inventory.getPurchase(SKU_INFINITE_GAS_MONTHLY);
+            Purchase gasQuaterly = inventory.getPurchase(SKU_INFINITE_GAS_QUATERLY);
+            Purchase gasHalfYearly = inventory.getPurchase(SKU_INFINITE_GAS_HALFYEARLY);
+            Purchase gasYearly = inventory.getPurchase(SKU_INFINITE_GAS_YEARLY);
+            if (gasMonthly != null && gasMonthly.isAutoRenewing()) {
+                mInfiniteGasSku = SKU_INFINITE_GAS_MONTHLY;
+                mAutoRenewEnabled = true;
+            }else if (gasQuaterly != null && gasQuaterly.isAutoRenewing()) {
+                mInfiniteGasSku = SKU_INFINITE_GAS_QUATERLY;
+                mAutoRenewEnabled = true;
+            }else if (gasHalfYearly!= null && gasHalfYearly.isAutoRenewing()) {
+                mInfiniteGasSku = SKU_INFINITE_GAS_HALFYEARLY;
+                mAutoRenewEnabled = true;
+            }
+            else if (gasYearly != null && gasYearly.isAutoRenewing()) {
+                mInfiniteGasSku = SKU_INFINITE_GAS_YEARLY;
+                mAutoRenewEnabled = true;
+            } else {
+                mInfiniteGasSku = "";
+                mAutoRenewEnabled = false;
+            }
+
+            // The user is subscribed if either subscription exists, even if neither is auto
+            // renewing
+            mSubscribedToInfiniteGas = (gasMonthly != null && verifyDeveloperPayload(gasMonthly))
+                    || (gasQuaterly != null && verifyDeveloperPayload(gasQuaterly))
+                    || (gasHalfYearly != null && verifyDeveloperPayload(gasHalfYearly))
+                    || (gasYearly != null && verifyDeveloperPayload(gasYearly));
+            Log.d("TAG", "User " + (mSubscribedToInfiniteGas ? "HAS" : "DOES NOT HAVE")
+                    + " infinite gas subscription.");
+            haveTrialorSubs();
+
+        }
+    };
+
+    @Override
+    public void receivedBroadcast() {
+        // Received a broadcast notification that the inventory of items has changed
+        Log.d("TAG", "Received broadcast notification. Querying inventory.");
+        try {
+            mHelper.queryInventoryAsync(mGotInventoryListener);
+        } catch (IabHelper.IabAsyncInProgressException e) {
+            complain("Error querying inventory. Another async operation in progress.");
+        }
+    }
+
+    private TrialyCallback mTrialyCallback = new TrialyCallback() {
+        @Override
+        public void onResult(int status, long timeRemaining, String sku) {
+            switch (status){
+                case STATUS_TRIAL_JUST_STARTED:
+
+                    break;
+                case STATUS_TRIAL_RUNNING:
+
+                    break;
+                case STATUS_TRIAL_JUST_ENDED:
+                    havetrial=false;
+                    haveTrialorSubs();
+                    break;
+                case STATUS_TRIAL_NOT_YET_STARTED:
+                    havetrial=false;
+                    haveTrialorSubs();
+                    break;
+                case STATUS_TRIAL_OVER:
+                    havetrial=false;
+                    haveTrialorSubs();
+                    break;
+            }
+            Log.i("TRIALY", "Returned status: " + Trialy.getStatusMessage(status));
+        }
+
+    };
+
+    void complain(String message) {
+        Log.e("TAG", "**** TrivialDrive Error: " + message);
+        alert("Error: " + message);
+    }
+
+    void alert(String message) {
+        android.app.AlertDialog.Builder bld = new android.app.AlertDialog.Builder(this);
+        bld.setMessage(message);
+        bld.setNeutralButton("OK", null);
+        Log.d("TAG", "Showing alert dialog: " + message);
+        bld.create().show();
+
+
+    }
+
+    boolean verifyDeveloperPayload(Purchase p) {
+        String payload = p.getDeveloperPayload();
+        return true;
+    }
+
+    void haveTrialorSubs(){
+        if(!havetrial && !mSubscribedToInfiniteGas) {
+            startActivity(new Intent(RouteSelectionActivity.this, Subscription.class));
+            finish();
+        }
+    }
+
+
 }

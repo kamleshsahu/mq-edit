@@ -8,7 +8,12 @@ import com.google.gson.annotations.SerializedName;
 
 public class Output implements Serializable
 {
-
+    @SerializedName("distance")
+    @Expose
+    private String distance;
+    @SerializedName("duration")
+    @Expose
+    private String duration;
     @SerializedName("items")
     @Expose
     private List<Item> items = null;
@@ -51,4 +56,11 @@ public class Output implements Serializable
         this.steps = steps;
     }
 
+    public String getDistance() {
+        return distance;
+    }
+
+    public String getDuration() {
+        return duration;
+    }
 }

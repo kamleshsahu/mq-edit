@@ -1,6 +1,6 @@
 apply plugin: 'com.android.application'
 
-def defaultAppVersionCode = '2'
+def defaultAppVersionCode = '3'
 def appVersionCode = System.getProperty('versionCode', defaultAppVersionCode).toInteger()
 
 repositories {
@@ -13,7 +13,8 @@ android {
     buildToolsVersion '27.0.2'
 
     defaultConfig {
-        applicationId "com.mapquest.navigation.sampleapp"
+     //   applicationId "com.mapquest.navigation.sampleapp"
+        applicationId "com.kamlesh.mapquestapp"
         minSdkVersion 16
         targetSdkVersion 27
         versionCode appVersionCode
@@ -65,6 +66,8 @@ dependencies {
 
     // multidex support lib (required when minSdkVersion is below 21)
     compile 'com.android.support:multidex:1.0.1'
-
+    compile 'com.github.bumptech.glide:glide:4.5.0'
     compile 'org.jbundle.util.osgi.wrapped:org.jbundle.util.osgi.wrapped.org.apache.http.client:4.1.2'
+
+    compile 'io.trialy.library:trialy:1.0.7'
 }
