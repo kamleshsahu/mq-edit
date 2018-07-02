@@ -40,6 +40,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -218,7 +219,7 @@ public class RouteSelectionActivity extends AppCompatActivity
     static Destination dstnCord;
     DatePicker datePicker;
     TimePicker timePicker;
-    CardView datePickerCV,timePickerCV;
+    RelativeLayout datePickerCV,timePickerCV;
 
     TextView date;
     TextView time;
