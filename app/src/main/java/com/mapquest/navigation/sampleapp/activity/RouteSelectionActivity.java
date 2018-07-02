@@ -1135,8 +1135,8 @@ public class RouteSelectionActivity extends AppCompatActivity
                 if (netInfo != null && netInfo.isConnected()) {
                     HttpClient client = new DefaultHttpClient();
                     HttpResponse response = null;
-                    String url="https://ou4ptj7z2b.execute-api.ap-south-1.amazonaws.com/dev";
-
+                 //   String url="https://ou4ptj7z2b.execute-api.ap-south-1.amazonaws.com/dev";
+                    String url ="https://nk0031nuf4.execute-api.ap-south-1.amazonaws.com/dev";
                     HttpPost request = new HttpPost(url);
 
                     Input input=new Input();
