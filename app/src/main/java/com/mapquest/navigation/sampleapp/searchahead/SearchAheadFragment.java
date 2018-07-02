@@ -27,7 +27,7 @@ import com.mapquest.android.searchahead.model.response.SearchAheadResult;
 import com.mapquest.navigation.model.location.Coordinate;
 import com.mapquest.navigation.sampleapp.BuildConfig;
 import com.mapquest.navigation.sampleapp.R;
-import com.mapquest.navigation.sampleapp.location.CurrentLocationProvider;
+//import com.mapquest.navigation.sampleapp.location.CurrentLocationProvider;
 import com.mapquest.navigation.sampleapp.util.UiUtil;
 import com.mapquest.navigation.sampleapp.view.OnSingleItemClickListener;
 
@@ -49,8 +49,8 @@ public class SearchAheadFragment extends Fragment {
     @Nullable
     private OnSearchResultSelectedListener mOnSearchResultSelectedListener;
 
-    @Nullable
-    private CurrentLocationProvider mCurrentLocationProvider;
+//    @Nullable
+//    private CurrentLocationProvider mCurrentLocationProvider;
 
     @Nullable
     private SearchAheadAdapter mSearchAheadAdapter;
@@ -123,7 +123,7 @@ public class SearchAheadFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
-        mCurrentLocationProvider = (CurrentLocationProvider) getActivity();
+ //       mCurrentLocationProvider = (CurrentLocationProvider) getActivity();
 
         mSearchAheadAdapter = new SearchAheadAdapter(getActivity().getApplicationContext());
         mSearchAheadListView.setAdapter(mSearchAheadAdapter);
@@ -184,7 +184,7 @@ public class SearchAheadFragment extends Fragment {
 
     protected void updateContentForSearchText(final String searchText) {
         mText = searchText;
-        LatLng currentMapCenter = ((CurrentLocationProvider) getActivity()).getCurrentLocation();
+//        LatLng currentMapCenter = ((CurrentLocationProvider) getActivity()).getCurrentLocation();
 
         // first, build a search-ahead query...
         if (searchText.length() < 2) {
@@ -194,7 +194,7 @@ public class SearchAheadFragment extends Fragment {
             try {
                 // Log.d(TAG, "updateContentForSearchText mText: " + mText + " ; mCurrentMapCenter: " + mCurrentMapCenter);
                 searchAheadQuery = new SearchAheadQuery.Builder(mText, SEARCH_AHEAD_SEARCH_COLLECTIONS)
-                        .location(currentMapCenter)
+//                        .location(currentMapCenter)
                         .limit(SEARCH_AHEAD_RESULT_LIMIT)
                         .feedback(true)
                         .build();

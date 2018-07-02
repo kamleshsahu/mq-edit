@@ -82,7 +82,7 @@ import com.mapquest.navigation.sampleapp.Models.Item;
 import com.mapquest.navigation.sampleapp.Models.Output;
 import com.mapquest.navigation.sampleapp.Models.Step;
 import com.mapquest.navigation.sampleapp.R;
-import com.mapquest.navigation.sampleapp.location.CurrentLocationProvider;
+//import com.mapquest.navigation.sampleapp.location.CurrentLocationProvider;
 import com.mapquest.navigation.sampleapp.searchahead.SearchAheadFragment;
 import com.mapquest.navigation.sampleapp.searchahead.SearchBarView;
 import com.mapquest.navigation.sampleapp.service.NavigationNotificationService;
@@ -135,8 +135,9 @@ import static io.trialy.library.Constants.STATUS_TRIAL_OVER;
 import static io.trialy.library.Constants.STATUS_TRIAL_RUNNING;
 
 public class RouteSelectionActivity extends AppCompatActivity
-        implements CurrentLocationProvider
-        , SearchAheadFragment.OnSearchResultSelectedListener
+        implements
+//        CurrentLocationProvider
+         SearchAheadFragment.OnSearchResultSelectedListener
         , IabBroadcastReceiver.IabBroadcastListener{
 
     private static final String TAG = LogUtil.generateLoggingTag(RouteSelectionActivity.class);
@@ -562,7 +563,7 @@ public class RouteSelectionActivity extends AppCompatActivity
     }
 
     private void requestData(){
-        if (originCord==null&&dstnCord==null){
+        if (originCord==null||dstnCord==null){
             Toast.makeText(mApp, "Please Enter Source & Destination.", Toast.LENGTH_SHORT).show();
         }else {
             mMapController.clear();
@@ -725,7 +726,7 @@ public class RouteSelectionActivity extends AppCompatActivity
         super.onResume();
 
         mMap.onResume();
-        mApp.getLocationProviderAdapter().addLocationListener(mFollowUserLocationListener);
+//        mApp.getLocationProviderAdapter().addLocationListener(mFollowUserLocationListener);
 
         enableButton(mStartButton, (mSelectedRoute != null)); // enable "start nav" if there's (still) a selected route
 
@@ -738,7 +739,7 @@ public class RouteSelectionActivity extends AppCompatActivity
     @Override
     protected void onPause() {
         mMap.onPause();
-        mApp.getLocationProviderAdapter().removeLocationListener(mFollowUserLocationListener);
+//        mApp.getLocationProviderAdapter().removeLocationListener(mFollowUserLocationListener);
 
         super.onPause();
     }
@@ -757,93 +758,7 @@ public class RouteSelectionActivity extends AppCompatActivity
         super.onDestroy();
     }
 
-    @OnClick(R.id.start)
-    protected void startNavigationActivity() {
-        //mRouteNameTextView.setVisibility(View.GONE);
 
-        final SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
-        if (sharedPreferences.contains(USER_TRACKING_CONSENT_KEY)) {
-            boolean userGrantedLocationTrackingConsent = sharedPreferences.getBoolean(USER_TRACKING_CONSENT_KEY, false);
-
-            Intent navigationActivityIntent = NavigationActivity
-                    .buildNavigationActivityIntent(this, mSelectedRoute, userGrantedLocationTrackingConsent);
-
-            startActivity(navigationActivityIntent);
-
-        } else {
-            new AlertDialog.Builder(this)
-                    .setTitle(R.string.user_tracking_consent_dialog_title)
-                    .setMessage(R.string.user_tracking_consent_dialog_message)
-                    .setCancelable(false)
-                    .setPositiveButton(R.string.user_tracking_consent_dialog_positive_button_text,
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    sharedPreferences.edit()
-                                            .putBoolean(USER_TRACKING_CONSENT_KEY, true)
-                                            .apply();
-
-                                    Intent navigationActivityIntent = NavigationActivity
-                                            .buildNavigationActivityIntent(RouteSelectionActivity.this,
-                                                    mSelectedRoute, true);
-
-                                    startActivity(navigationActivityIntent);
-
-                                }
-                            })
-                    .setNegativeButton(R.string.user_tracking_consent_dialog_negative_button_text,
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    sharedPreferences.edit()
-                                            .putBoolean(USER_TRACKING_CONSENT_KEY, false)
-                                            .apply();
-
-                                    Intent navigationActivityIntent = NavigationActivity
-                                            .buildNavigationActivityIntent(RouteSelectionActivity.this,
-                                                    mSelectedRoute, false);
-
-                                    startActivity(navigationActivityIntent);
-                                }
-                            })
-                    .show();
-        }
-    }
-
-    private void acquireCurrentLocationAndZoom(final MapboxMap mapController) {
-        LocationProviderAdapter locationProviderAdapter = mApp.getLocationProviderAdapter();
-        LocationUtil.acquireLocation(this, locationProviderAdapter,
-                new LocationProviderAdapter.LocationAcquisitionListener() {
-                    @Override
-                    public void onLocationAcquired(final com.mapquest.navigation.model.location.Location acquiredLocation) {
-                        mStartingCoordinate = acquiredLocation;
-                        new Handler().postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                mapController.moveCamera(
-                                        CameraUpdateFactory.newLatLngZoom(toLatLng(acquiredLocation), DEFAULT_ZOOM_LEVEL));
-                                mapController.setOnMapLongClickListener(mMapLongClickListener);
-                                markOrigin(acquiredLocation);
-
-                                Toast.makeText(getApplicationContext(), "Starting point is your Current Location.\n\n" +
-                                        "Long-press on the map to add a destination location...", Toast.LENGTH_LONG).show();
-                            }
-                        }, 100);
-                    }
-                });
-    }
-
-    private void acquireCurrentLocationAndRetrieveRoutesToDestinations(final List<Destination> destinationLocations) {
-        LocationProviderAdapter locationProviderAdapter = mApp.getLocationProviderAdapter();
-        LocationUtil.acquireLocation(this, locationProviderAdapter,
-                new LocationProviderAdapter.LocationAcquisitionListener() {
-                    @Override
-                    public void onLocationAcquired(com.mapquest.navigation.model.location.Location acquiredLocation) {
-                        mStartingCoordinate = acquiredLocation;
-                        retrieveRouteFromStartingLocationToDestinations(acquiredLocation, destinationLocations);
-                    }
-                });
-    }
 
 
     private void retrieveRouteFromStartingLocationToDestinations(final Coordinate startingCoordinate, final List<Destination> destinationLocations) {
@@ -1087,11 +1002,11 @@ public class RouteSelectionActivity extends AppCompatActivity
         return new LatLng(coordinate.getLatitude(), coordinate.getLongitude());
     }
 
-    @Nullable
-    @Override
-    public com.mapquest.android.commoncore.model.LatLng getCurrentLocation() {
-        return toMapQuestLatLng(mMapController.getCameraPosition().target);
-    }
+//    @Nullable
+//    @Override
+//    public com.mapquest.android.commoncore.model.LatLng getCurrentLocation() {
+//        return toMapQuestLatLng(mMapController.getCameraPosition().target);
+//    }
 
     private class RouteClickListener implements MapboxMap.OnMapClickListener {
         @Override

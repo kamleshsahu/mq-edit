@@ -22,7 +22,7 @@ import com.mapquest.navigation.sampleapp.Methods.PlaceSaver;
 import com.mapquest.navigation.sampleapp.Models.MPlace;
 import com.mapquest.navigation.sampleapp.Models.PlaceSaverObject;
 import com.mapquest.navigation.sampleapp.R;
-import com.mapquest.navigation.sampleapp.location.CurrentLocationProvider;
+//import com.mapquest.navigation.sampleapp.location.CurrentLocationProvider;
 import com.mapquest.navigation.sampleapp.searchahead.SearchAheadFragment;
 import com.mapquest.navigation.sampleapp.searchahead.SearchBarView;
 
@@ -36,7 +36,9 @@ import static com.mapquest.navigation.sampleapp.activity.RouteSelectionActivity.
 import static com.mapquest.navigation.sampleapp.activity.RouteSelectionActivity.sd;
 
 public class SelectPlace extends AppCompatActivity
-        implements CurrentLocationProvider, SearchAheadFragment.OnSearchResultSelectedListener{
+        implements
+//        CurrentLocationProvider,
+        SearchAheadFragment.OnSearchResultSelectedListener{
     private static final String SEARCH_AHEAD_FRAGMENT_TAG = "tag_search_ahead_fragment";
     List<MPlace> recentSearches=new ArrayList<>();
     ListView recent_listview;
@@ -105,11 +107,11 @@ public class SelectPlace extends AppCompatActivity
         });
     }
 
-    @Nullable
-    @Override
-    public LatLng getCurrentLocation() {
-        return null;
-    }
+//    @Nullable
+//    @Override
+//    public LatLng getCurrentLocation() {
+//        return null;
+//    }
 
     @Override
     public void onSearchResultSelected(String displayName, Coordinate coordinate, String mqId) {
