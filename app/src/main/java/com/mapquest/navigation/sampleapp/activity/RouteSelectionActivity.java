@@ -241,10 +241,10 @@ public class RouteSelectionActivity extends AppCompatActivity
     IabBroadcastReceiver mBroadcastReceiver;
     Trialy mTrialy;
 
-    String SKU_INFINITE_GAS_MONTHLY = "infinite_gas_monthly";
+    String SKU_INFINITE_GAS_MONTHLY = "monthly";
     String SKU_INFINITE_GAS_QUATERLY = "quaterly";
     String SKU_INFINITE_GAS_HALFYEARLY = "halfyearly";
-    String SKU_INFINITE_GAS_YEARLY = "infinite_gas_yearly";
+    String SKU_INFINITE_GAS_YEARLY = "yearly";
 
     boolean mSubscribedToInfiniteGas = true;
     boolean mAutoRenewEnabled = false;
@@ -1152,7 +1152,7 @@ public class RouteSelectionActivity extends AppCompatActivity
             try {
                 Output output = new Gson().fromJson(result, Output.class);
                 if(output!=null) {
-                    ((TextView)findViewById(R.id.distance)).setText(output.getDistance());
+                    ((TextView)findViewById(R.id.distance)).setText("("+output.getDistance()+")");
                     ((TextView)findViewById(R.id.duration)).setText(output.getDuration());
                     puttomap(output);
                 }

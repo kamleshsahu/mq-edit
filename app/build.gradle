@@ -1,6 +1,6 @@
 apply plugin: 'com.android.application'
 
-def defaultAppVersionCode = '3'
+def defaultAppVersionCode = '5'
 def appVersionCode = System.getProperty('versionCode', defaultAppVersionCode).toInteger()
 
 repositories {

@@ -28,11 +28,11 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name="com.mapquest.navigation.sampleapp.activity.NavigationActivity"
-            android:launchMode="singleTop"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+        <!--<activity-->
+            <!--android:name="com.mapquest.navigation.sampleapp.activity.NavigationActivity"-->
+            <!--android:launchMode="singleTop"-->
+            <!--android:screenOrientation="portrait"-->
+            <!--android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>-->
 
         <service
             android:name="com.mapquest.navigation.sampleapp.service.NavigationNotificationService"
