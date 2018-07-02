@@ -14,10 +14,16 @@
         app:showAsAction="always" />
     <item
         android:fontFamily="sans-serif-thin"
+        android:id="@+id/btnSubsc"
+        android:title="Subscribe"
+        app:showAsAction="never" />
+    <item
+        android:fontFamily="sans-serif-thin"
         android:id="@+id/action_settings"
         android:title="Show Weather After"
-        app:showAsAction="never" >
+        app:showAsAction="never">
         <menu>
+
             <group android:checkableBehavior="single">
                 <item
                     android:fontFamily="sans-serif-thin"

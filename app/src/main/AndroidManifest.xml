@@ -36,8 +36,10 @@
         <service
             android:name="com.mapquest.navigation.sampleapp.service.NavigationNotificationService"
             android:stopWithTask="true"/>
-         <activity android:name=".activity.SelectPlace"></activity>
-         <activity android:name=".activity.Subscription"></activity>
+         <activity android:name=".activity.SelectPlace"
+             android:screenOrientation="portrait"></activity>
+         <activity android:name=".activity.Subscription"
+             android:screenOrientation="portrait"></activity>
     </application>e
 
 </manifest>

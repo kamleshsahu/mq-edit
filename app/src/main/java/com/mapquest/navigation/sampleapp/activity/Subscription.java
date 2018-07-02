@@ -4,8 +4,8 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
@@ -15,17 +15,15 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-//import com.MsoftTexas.WeatherOnMyTripRoute.util.IabBroadcastReceiver;
-//import com.MsoftTexas.WeatherOnMyTripRoute.util.IabHelper;
-//import com.MsoftTexas.WeatherOnMyTripRoute.util.IabResult;
-//import com.MsoftTexas.WeatherOnMyTripRoute.util.Inventory;
-//import com.MsoftTexas.WeatherOnMyTripRoute.util.Purchase;
+
 import com.mapquest.navigation.sampleapp.R;
 import com.mapquest.navigation.sampleapp.util.IabBroadcastReceiver;
 import com.mapquest.navigation.sampleapp.util.IabHelper;
 import com.mapquest.navigation.sampleapp.util.IabResult;
 import com.mapquest.navigation.sampleapp.util.Inventory;
 import com.mapquest.navigation.sampleapp.util.Purchase;
+import com.podcopic.animationlib.library.AnimationType;
+import com.podcopic.animationlib.library.StartSmartAnimation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,10 +33,7 @@ import io.trialy.library.Trialy;
 import io.trialy.library.TrialyCallback;
 
 import static android.view.View.GONE;
-//import static com.MsoftTexas.WeatherOnMyTripRoute.MapActivity.TRIALY_APP_KEY;
-//import static com.MsoftTexas.WeatherOnMyTripRoute.MapActivity.TRIALY_SKU;
-//import static com.MsoftTexas.WeatherOnMyTripRoute.MapActivity.base64EncodedPublicKey;
-//import static com.MsoftTexas.WeatherOnMyTripRoute.MapActivity.havetrial;
+
 import static com.mapquest.navigation.sampleapp.activity.RouteSelectionActivity.TRIALY_APP_KEY;
 import static com.mapquest.navigation.sampleapp.activity.RouteSelectionActivity.TRIALY_SKU;
 import static com.mapquest.navigation.sampleapp.activity.RouteSelectionActivity.base64EncodedPublicKey;
@@ -102,7 +97,17 @@ public class Subscription extends AppCompatActivity implements IabBroadcastRecei
     // (arbitrary) request code for the purchase flow
     static final int RC_REQUEST = 10001;
 
+    // Graphics for the gas gauge
+//    static int[] TANK_RES_IDS = { R.drawable.gas0, R.drawable.gas1, R.drawable.gas2,
+//            R.drawable.gas3, R.drawable.gas4 };
 
+    // How many units (1/4 tank is our unit) fill in the tank.
+//    static final int TANK_MAX = 4;
+
+    // Current amount of gas in tank, in units
+//    int mTank;
+
+    // The helper object
     IabHelper mHelper;
 
     // Provides purchase notification while this app is running
@@ -112,7 +117,7 @@ public class Subscription extends AppCompatActivity implements IabBroadcastRecei
     Boolean buySubs=false;
 
 //   String TRIALY_APP_KEY = "CNXFXUSWNXNREPZN6FW"; //TODO: Replace with your app key, which can be found on your Trialy developer dashboard
-//   String TRIALY_SKU = "t2_test"; //TODO: Replace with a trial SKU, which can be found on your Trialy developer dashboard. Each app can have multiple trials
+//   String TRIALY_SKU = "t2"; //TODO: Replace with a trial SKU, which can be found on your Trialy developer dashboard. Each app can have multiple trials
 //   String base64EncodedPublicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnh6LDOmwwPSQ8KesBlRQ/LrN/75xUFQhVmvfJG6uUlmgxU4iWiMzwr1iydveIz3cNT2C1IdnBpohHuDhn9RlOn5uaR3Cw0BDGrnRzwHZRPdoJ3/tAWIS+cLD/5LU7sriMOi6spMaPTYjgrT/Lck36goPwY88FK+e2G09cFrd54WQBPwHO+COKlKOFQ7Yt9yiCLlwivhdSDbacuVGg696JjAeTBvnw0eqks7Q/FHg2U0TlhBf/RU2+tvCnR2L0hk1kgkkdZFua8aDrZ1xQkEkBzlrrHrGnmqCyVoPHwMcxoOKM61BX511NMRuBJv9Eg19n4QITqT/fsR7vzmnljjxLQIDAQAB" ;
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -122,8 +127,26 @@ public class Subscription extends AppCompatActivity implements IabBroadcastRecei
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        findViewById(R.id.sub_card).setBackgroundResource(R.drawable.gradient);
+
         mTrialy = new Trialy(this, TRIALY_APP_KEY);
         mTrialy.checkTrial(TRIALY_SKU, mTrialyCallback);
+
+      //  LottieAnimationView lottieAnimationView=findViewById(R.id.sun);
+        //lottieAnimationView.setSpeed((float) 0.5);
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                // Do something after 5s = 5000ms
+            findViewById(R.id.main_layout).setVisibility(View.VISIBLE);
+            }
+        }, 300);
+        StartSmartAnimation.startAnimation( findViewById(R.id.toolbar) , AnimationType.SlideInDown , 700 , 0 , true );
+      //  StartSmartAnimation.startAnimation( findViewById(R.id.sun) , AnimationType.BounceInDown , 2000 , 0 , true );
+        StartSmartAnimation.startAnimation( findViewById(R.id.llTimeRemainingg) , AnimationType.ZoomInRubberBand , 700 , 0 , true );
+        StartSmartAnimation.startAnimation( findViewById(R.id.sub_box) , AnimationType.SlideInLeft , 700 , 0 , true );
+        StartSmartAnimation.startAnimation( findViewById(R.id.linearLayout3) , AnimationType.SlideInUp , 700 , 0 , true );
         // load game data
     //    loadData();
 
@@ -201,9 +224,13 @@ public class Subscription extends AppCompatActivity implements IabBroadcastRecei
             }
         });
 
-        findViewById(R.id.backbutton).setOnClickListener(new View.OnClickListener() {
+
+        Toolbar back = (Toolbar) findViewById(R.id.toolbar);
+
+        back.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // back button pressed
                 startActivity(new Intent(Subscription.this,RouteSelectionActivity.class));
                 finish();
             }
@@ -271,10 +298,24 @@ public class Subscription extends AppCompatActivity implements IabBroadcastRecei
             if (mSubscribedToInfiniteGas){
                 Button btnSubscribe=findViewById(R.id.subscribe);
                 btnSubscribe.setText("Subscribed");
-                btnSubscribe.setTextColor(getResources().getColor(R.color.colorAccent));
+                btnSubscribe.setBackgroundColor(getResources().getColor(R.color.colorAccent));
+                btnSubscribe.setTextColor(getResources().getColor(R.color.loo_pre));
                 findViewById(R.id.btnStartTrial).setVisibility(GONE);
                 findViewById(R.id.llTimeRemaining).setVisibility(GONE);
                 }
+ //               mTank = TANK_MAX;
+
+            // Check for gas delivery -- if we own gas, we should fill up the tank immediately
+//            Purchase gasPurchase = inventory.getPurchase(SKU_GAS);
+//            if (gasPurchase != null && verifyDeveloperPayload(gasPurchase)) {
+//                Log.d(TAG, "We have gas. Consuming it.");
+//                try {
+//                    mHelper.consumeAsync(inventory.getPurchase(SKU_GAS), mConsumeFinishedListener);
+//                } catch (IabHelper.IabAsyncInProgressException e) {
+//                    complain("Error consuming gas. Another async operation in progress.");
+//                }
+//                return;
+//            }
 
             updateUi();
             setWaitScreen(false);
@@ -293,7 +334,60 @@ public class Subscription extends AppCompatActivity implements IabBroadcastRecei
         }
     }
 
+    // User clicked the "Buy Gas" button
+//    public void onBuyGasButtonClicked(View arg0) {
+//        Log.d(TAG, "Buy gas button clicked.");
+//
+//        if (mSubscribedToInfiniteGas) {
+//            complain("No need! You're subscribed to infinite gas. Isn't that awesome?");
+//            return;
+//        }
+//
+//        if (mTank >= TANK_MAX) {
+//            complain("Your tank is full. Drive around a bit!");
+//            return;
+//        }
+//
+//        // launch the gas purchase UI flow.
+//        // We will be notified of completion via mPurchaseFinishedListener
+//        setWaitScreen(true);
+//        Log.d(TAG, "Launching purchase flow for gas.");
+//
+//        /* TODO: for security, generate your payload here for verification. See the comments on
+//         *        verifyDeveloperPayload() for more info. Since this is a SAMPLE, we just use
+//         *        an empty string, but on a production app you should carefully generate this. */
+//        String payload = "";
+//
+//        try {
+//            mHelper.launchPurchaseFlow(this, SKU_GAS, RC_REQUEST,
+//                    mPurchaseFinishedListener, payload);
+//        } catch (IabHelper.IabAsyncInProgressException e) {
+//            complain("Error launching purchase flow. Another async operation in progress.");
+//            setWaitScreen(false);
+//        }
+//    }
 
+    // User clicked the "Upgrade to Premium" button.
+//    public void onUpgradeAppButtonClicked(View arg0) {
+//        Log.d(TAG, "Upgrade button clicked; launching purchase flow for upgrade.");
+//        setWaitScreen(true);
+//
+//        /* TODO: for security, generate your payload here for verification. See the comments on
+//         *        verifyDeveloperPayload() for more info. Since this is a SAMPLE, we just use
+//         *        an empty string, but on a production app you should carefully generate this. */
+//        String payload = "";
+//
+//        try {
+//            mHelper.launchPurchaseFlow(this, SKU_PREMIUM, RC_REQUEST,
+//                    mPurchaseFinishedListener, payload);
+//        } catch (IabHelper.IabAsyncInProgressException e) {
+//            complain("Error launching purchase flow. Another async operation in progress.");
+//            setWaitScreen(false);
+//        }
+//    }
+
+    // "Subscribe to infinite gas" button clicked. Explain to user, then start purchase
+    // flow for subscription.
     public void onInfiniteGasButtonClicked(View arg0) {
         if (!mHelper.subscriptionsSupported()) {
             complain("Subscriptions not supported on your device yet. Sorry!");
@@ -508,7 +602,10 @@ public class Subscription extends AppCompatActivity implements IabBroadcastRecei
 //
                Button btnSubscribe=findViewById(R.id.subscribe);
                btnSubscribe.setText("Subscribed");
-               btnSubscribe.setBackgroundColor(Color.GREEN);
+               btnSubscribe.setBackgroundColor(getResources().getColor(R.color.colorAccent));
+               btnSubscribe.setTextColor(getResources().getColor(R.color.loo_pre));
+                    findViewById(R.id.btnStartTrial).setVisibility(GONE);
+                    findViewById(R.id.llTimeRemaining).setVisibility(GONE);
 
 //                    startActivity(new Intent(Subscription.this,MapActivity.class));
 //                    finish();
@@ -567,8 +664,8 @@ public class Subscription extends AppCompatActivity implements IabBroadcastRecei
 
     // Enables or disables the "please wait" screen.
     void setWaitScreen(boolean set) {
-        findViewById(R.id.screen_main).setVisibility(set ? GONE : View.VISIBLE);
-        findViewById(R.id.screen_wait).setVisibility(set ? View.VISIBLE : GONE);
+//        findViewById(R.id.screen_main).setVisibility(set ? GONE : View.VISIBLE);
+//        findViewById(R.id.screen_wait).setVisibility(set ? View.VISIBLE : GONE);
     }
 
     void complain(String message) {
@@ -611,6 +708,9 @@ public class Subscription extends AppCompatActivity implements IabBroadcastRecei
 //                    startActivity(intent1);
                     havetrial=true;
                     disableStartTrialButton("Trial Activated");
+                    Button btnStartTrial = (Button)findViewById(R.id.btnStartTrial);
+                    btnStartTrial.setTextColor(getResources().getColor(R.color.loo_pre));
+                    btnStartTrial.setBackgroundColor(getResources().getColor(R.color.colorAccent));
                     break;
                 case STATUS_TRIAL_JUST_ENDED:
                     //The trial has just ended - block access to the premium features
@@ -673,7 +773,7 @@ public class Subscription extends AppCompatActivity implements IabBroadcastRecei
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
             finish();
-           // System.exit(0);
+            System.exit(0);
 
             }
         super.onBackPressed();

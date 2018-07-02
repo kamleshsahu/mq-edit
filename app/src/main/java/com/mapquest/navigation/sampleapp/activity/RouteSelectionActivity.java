@@ -29,6 +29,8 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -151,8 +153,8 @@ public class RouteSelectionActivity extends AppCompatActivity
     @BindView(R.id.retrieve_routes)
     protected Button mRetrieveRoutesButton;
 
-    @BindView(R.id.clear_routes)
-    protected FloatingActionButton mClearRoutesButton;
+//    @BindView(R.id.clear_routes)
+//    protected FloatingActionButton mClearRoutesButton;
 
 //    @BindView(R.id.route_name_text_view)
 //    protected TextView mRouteNameTextView;
@@ -243,7 +245,7 @@ public class RouteSelectionActivity extends AppCompatActivity
         Log.d(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_route_selection);
+        setContentView(R.layout.main_activity);
 
         mTrialy = new Trialy(this, TRIALY_APP_KEY);
         mTrialy.checkTrial(TRIALY_SKU, mTrialyCallback);
@@ -278,7 +280,9 @@ public class RouteSelectionActivity extends AppCompatActivity
         int month = datePicker.getMonth() + 1;
         int year = datePicker.getYear();
 
-        date.setText(day+"-"+month+"-"+year);
+        final String[] MONTHS = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
+        date.setText(","+day+" "+MONTHS[month]+" "+String.valueOf(year).replace("20",""));
 
         int hour = timePicker.getCurrentHour();
         int min = timePicker.getCurrentMinute();
@@ -329,7 +333,9 @@ public class RouteSelectionActivity extends AppCompatActivity
                 int day = datePicker.getDayOfMonth();
                 int month = datePicker.getMonth() + 1;
                 int year = datePicker.getYear();
-                date.setText(day+"-"+month+"-"+year);
+                final String[] MONTHS = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
+                date.setText(","+day+" "+MONTHS[month]+" "+String.valueOf(year).replace("20",""));
                 findViewById(R.id.datecheck).setVisibility(View.GONE);
 
 
@@ -457,12 +463,16 @@ public class RouteSelectionActivity extends AppCompatActivity
         Go.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                expandableLayout.toggle();
-                mDestinationLocations=new ArrayList<>();
-                mDestinationLocations.add(dstnCord);
-                retrieveRouteFromStartingLocationToDestinations(originCord,mDestinationLocations);
-                markOrigin(originCord);
-                addDestinationToRoute(dstnCord, dstnCord.getMqId());
+                if (originCord==null||dstnCord==null){
+                    Toast.makeText(mApp, "Please Enter Source & Destination.", Toast.LENGTH_SHORT).show();
+                }else {
+                    expandableLayout.toggle();
+                    mDestinationLocations = new ArrayList<>();
+                    mDestinationLocations.add(dstnCord);
+                    retrieveRouteFromStartingLocationToDestinations(originCord, mDestinationLocations);
+                    markOrigin(originCord);
+                    addDestinationToRoute(dstnCord, dstnCord.getMqId());
+                }
 
             }});
 
@@ -474,7 +484,7 @@ public class RouteSelectionActivity extends AppCompatActivity
 
         mDestinationLocations.clear();
 
-        mClearRoutesButton.setVisibility(View.GONE);
+//        mClearRoutesButton.setVisibility(View.GONE);
         enableButton(mRetrieveRoutesButton, false);
         enableButton(mStartButton, false);
 
@@ -565,9 +575,7 @@ public class RouteSelectionActivity extends AppCompatActivity
         }
     }
 
-    public void SubscribtionPage(View view) {
-        startActivity(new Intent(RouteSelectionActivity.this,Subscription.class));
-    }
+
 
     protected interface LocationPermissionsResultListener {
         void onRequestLocationPermissionsResult(boolean locationPermissionsWereGranted);
@@ -583,7 +591,7 @@ public class RouteSelectionActivity extends AppCompatActivity
      //   acquireCurrentLocationAndRetrieveRoutesToDestinations(mDestinationLocations);
     }
 
-    @OnClick(R.id.clear_routes)
+//    @OnClick(R.id.clear_routes)
     protected void clearRoutes() {
         clearMappedRoutes();
         for (Marker marker : new ArrayList<>(mDestinationMarkers)) {
@@ -593,7 +601,7 @@ public class RouteSelectionActivity extends AppCompatActivity
         mDestinationLocations.clear();
 
        // mRouteNameTextView.setVisibility(View.GONE);
-        mClearRoutesButton.setVisibility(View.GONE);
+//        mClearRoutesButton.setVisibility(View.GONE);
         enableButton(mRetrieveRoutesButton, false);
         enableButton(mStartButton, false);
 
@@ -635,8 +643,8 @@ public class RouteSelectionActivity extends AppCompatActivity
         Log.d(TAG, "addDestinationToRoute: adding new destination location with mqid " + mqId);
         mDestinationLocations.add(new Destination(destinationCoordinate, mqId));
 
-        mClearRoutesButton.setVisibility(View.VISIBLE);
-        StartSmartAnimation.startAnimation( mClearRoutesButton , AnimationType.SlideInUp , 700 , 0 , true );
+//        mClearRoutesButton.setVisibility(View.VISIBLE);
+//        StartSmartAnimation.startAnimation( mClearRoutesButton , AnimationType.SlideInUp , 700 , 0 , true );
         enableButton(mRetrieveRoutesButton, true);
         enableButton(mStartButton, false);
     }
@@ -1310,6 +1318,50 @@ public class RouteSelectionActivity extends AppCompatActivity
             finish();
         }
     }
+    //menu..............................................................................................
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main2, menu);
+        return true;
+    }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+            case R.id.km20:
+                item.setChecked(true);
+                //MapActivity.interval=20000;
+                return true;
+            case R.id.km30:
+                item.setChecked(true);
+                // MapActivity.interval=30000;
+                Toast.makeText(this, "30km", Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.km40:
+                item.setChecked(true);
+                // MapActivity.interval=40000;
+                return true;
+            case R.id.km50:
+                item.setChecked(true);
+                // MapActivity.interval=50000;
+                return true;
+            case R.id.action_retry:
+                //requestDirection();
+                Toast.makeText(this, "Retrying...", Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.action_clr:
+                Toast.makeText(this, "clear", Toast.LENGTH_SHORT).show();
+                origin=null;
+                // destination=null;
+                recreate();
+            case R.id.btnSubsc:
+                startActivity(new Intent(RouteSelectionActivity.this,Subscription.class));
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+//..................................................................................................
 
 }
