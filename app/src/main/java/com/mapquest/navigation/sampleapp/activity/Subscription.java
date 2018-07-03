@@ -142,9 +142,9 @@ public class Subscription extends AppCompatActivity implements IabBroadcastRecei
             findViewById(R.id.main_layout).setVisibility(View.VISIBLE);
             }
         }, 300);
-        StartSmartAnimation.startAnimation( findViewById(R.id.toolbar) , AnimationType.SlideInDown , 700 , 0 , true );
+    //    StartSmartAnimation.startAnimation( findViewById(R.id.toolbar) , AnimationType.SlideInDown , 700 , 0 , true );
       //  StartSmartAnimation.startAnimation( findViewById(R.id.sun) , AnimationType.BounceInDown , 2000 , 0 , true );
-        StartSmartAnimation.startAnimation( findViewById(R.id.llTimeRemainingg) , AnimationType.ZoomInRubberBand , 700 , 0 , true );
+       // StartSmartAnimation.startAnimation( findViewById(R.id.llTimeRemainingg) , AnimationType.ZoomIn , 700 , 0 , true );
         StartSmartAnimation.startAnimation( findViewById(R.id.sub_box) , AnimationType.SlideInLeft , 700 , 0 , true );
         StartSmartAnimation.startAnimation( findViewById(R.id.linearLayout3) , AnimationType.SlideInUp , 700 , 0 , true );
         // load game data
