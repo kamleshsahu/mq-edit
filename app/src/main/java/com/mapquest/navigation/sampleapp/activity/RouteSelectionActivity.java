@@ -231,7 +231,7 @@ public class RouteSelectionActivity extends AppCompatActivity
     static RecyclerView link;
 
     static String TRIALY_APP_KEY = "Z3P6OFOXJYPFGZHIVEX"; //TODO: Replace with your app key, which can be found on your Trialy developer dashboard
-    static String TRIALY_SKU = "t2_test"; //TODO: Replace with a trial SKU, which can be found on your Trialy developer dashboard. Each app can have multiple trials
+    static String TRIALY_SKU = "t3_test"; //TODO: Replace with a trial SKU, which can be found on your Trialy developer dashboard. Each app can have multiple trials
     static String base64EncodedPublicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwv07/4K0h67uPlJLcYW0cH70JfX2Ac8IX2aQzjIi9mR42RD18jhlt9wnNhCwasuMT5eOFDEOYM7mHgEWqO5TpPKAsx9peImuX8xdEftZkuMs3xxsOl1mUQAdkgm/siYv0CKpx2mIfaFKT8moAvjogPMrgHwwcSGTRmgLoZPTeRYqImwoDMk22LX7agstU9AoBFo3XSLpKCWdNbFvYtb8oMDPQsfbrsf45a3ZEA6zmYRwQt+zzVaOErqgyxqwFQ8vT54vEQ5nf3FNOUBwBoP+a39tEDFtrLLPBNWhbgym0hj1AYJsTJoTqXR5grfqmCkDdRCAVUQ/x2GqZXHvhtYMdwIDAQAB" ;
 
     IabHelper mHelper;
@@ -240,10 +240,10 @@ public class RouteSelectionActivity extends AppCompatActivity
     IabBroadcastReceiver mBroadcastReceiver;
     Trialy mTrialy;
 
-    String SKU_INFINITE_GAS_MONTHLY = "monthly";
+    String SKU_INFINITE_GAS_MONTHLY = "monthly_01";
     String SKU_INFINITE_GAS_QUATERLY = "quaterly";
     String SKU_INFINITE_GAS_HALFYEARLY = "halfyearly";
-    String SKU_INFINITE_GAS_YEARLY = "yearly";
+    String SKU_INFINITE_GAS_YEARLY = "yearly_12";
 
     boolean mSubscribedToInfiniteGas = true;
     boolean mAutoRenewEnabled = false;

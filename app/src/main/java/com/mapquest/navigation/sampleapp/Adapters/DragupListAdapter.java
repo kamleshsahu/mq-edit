@@ -128,7 +128,7 @@ public class DragupListAdapter extends RecyclerView.Adapter<DragupListAdapter.Pn
             arrtime= (TextView) itemView.findViewById(R.id.arrtime);
             weatherimg=itemView.findViewById(R.id.weatherImg);
             stepLength=itemView.findViewById(R.id.stepLength);
-            address=itemView.findViewById(R.id.address);
+         //   address=itemView.findViewById(R.id.address);
         }
     }
 }

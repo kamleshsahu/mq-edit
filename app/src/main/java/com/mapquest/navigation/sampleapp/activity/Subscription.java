@@ -297,12 +297,23 @@ public class Subscription extends AppCompatActivity implements IabBroadcastRecei
                     + " infinite gas subscription.");
             if (mSubscribedToInfiniteGas){
                 Button btnSubscribe=findViewById(R.id.subscribe);
-                btnSubscribe.setText("Subscribed");
+                btnSubscribe.setText("Change Subscription");
                 btnSubscribe.setBackgroundColor(getResources().getColor(R.color.colorAccent));
                 btnSubscribe.setTextColor(getResources().getColor(R.color.loo_pre));
                 findViewById(R.id.btnStartTrial).setVisibility(GONE);
-                findViewById(R.id.llTimeRemaining).setVisibility(GONE);
+                String pack="";
+                switch (mInfiniteGasSku){
+                    case SKU_INFINITE_GAS_MONTHLY:pack="Monthly";break;
+                    case SKU_INFINITE_GAS_QUATERLY:pack="Quaterly";break;
+                    case SKU_INFINITE_GAS_HALFYEARLY:pack="Half-Yearly";break;
+                    case SKU_INFINITE_GAS_YEARLY:pack="Yearly";break;
+                    default:pack="";
                 }
+                TextView tvTimeRemaining = (TextView)findViewById(R.id.tvTimeRemaining);
+                tvTimeRemaining.setVisibility(View.VISIBLE);
+                tvTimeRemaining.setText(String.format(Locale.ENGLISH, "You are Subscribed to %s Pack", pack));
+
+        }
  //               mTank = TANK_MAX;
 
             // Check for gas delivery -- if we own gas, we should fill up the tank immediately
@@ -590,6 +601,16 @@ public class Subscription extends AppCompatActivity implements IabBroadcastRecei
                         || purchase.getSku().equals(SKU_INFINITE_GAS_QUATERLY)
                         || purchase.getSku().equals(SKU_INFINITE_GAS_HALFYEARLY)
                     || purchase.getSku().equals(SKU_INFINITE_GAS_YEARLY)) {
+
+                    String pack="";
+                   switch (purchase.getSku()){
+                       case SKU_INFINITE_GAS_MONTHLY:pack="Monthly";break;
+                       case SKU_INFINITE_GAS_QUATERLY:pack="Quaterly";break;
+                       case SKU_INFINITE_GAS_HALFYEARLY:pack="Half-Yearly";break;
+                       case SKU_INFINITE_GAS_YEARLY:pack="Yearly";break;
+                       default:pack="";
+                   }
+
                 // bought the infinite gas subscription
                 Log.d(TAG, "Infinite gas subscription purchased.");
                 alert("Thank you for subscribing to infinite gas!");
@@ -601,11 +622,13 @@ public class Subscription extends AppCompatActivity implements IabBroadcastRecei
                 setWaitScreen(false);
 //
                Button btnSubscribe=findViewById(R.id.subscribe);
-               btnSubscribe.setText("Subscribed");
+               btnSubscribe.setText("Change Subscription");
                btnSubscribe.setBackgroundColor(getResources().getColor(R.color.colorAccent));
                btnSubscribe.setTextColor(getResources().getColor(R.color.loo_pre));
                     findViewById(R.id.btnStartTrial).setVisibility(GONE);
-                    findViewById(R.id.llTimeRemaining).setVisibility(GONE);
+                    TextView tvTimeRemaining = (TextView)findViewById(R.id.tvTimeRemaining);
+                    tvTimeRemaining.setVisibility(View.VISIBLE);
+                    tvTimeRemaining.setText(String.format(Locale.ENGLISH, "You are Subscribed to %s Pack", pack));
 
 //                    startActivity(new Intent(Subscription.this,MapActivity.class));
 //                    finish();
