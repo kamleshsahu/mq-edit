@@ -41,6 +41,6 @@
              android:screenOrientation="portrait"></activity>
          <activity android:name=".activity.Subscription"
              android:screenOrientation="portrait"></activity>
-    </application>e
+    </application>
 
 </manifest>

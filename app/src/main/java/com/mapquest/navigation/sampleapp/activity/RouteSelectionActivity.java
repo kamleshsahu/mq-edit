@@ -76,8 +76,7 @@ import com.mapquest.navigation.model.location.Destination;
 import com.mapquest.navigation.sampleapp.Adapters.DragupListAdapter;
 import com.mapquest.navigation.sampleapp.BuildConfig;
 import com.mapquest.navigation.sampleapp.MQNavigationSampleApplication;
-import com.mapquest.navigation.sampleapp.Methods.FetchCloudData;
-import com.mapquest.navigation.sampleapp.Methods.iconfromString;
+
 import com.mapquest.navigation.sampleapp.Models.Input;
 import com.mapquest.navigation.sampleapp.Models.Item;
 import com.mapquest.navigation.sampleapp.Models.Output;
@@ -574,7 +573,11 @@ public class RouteSelectionActivity extends AppCompatActivity
             retrieveRouteFromStartingLocationToDestinations(originCord, mDestinationLocations);
             markOrigin(originCord);
             addDestinationToRoute(dstnCord, dstnCord.getMqId());
-
+            try {
+                new FetchCloudData().execute(getApplicationContext(),originCord,dstnCord,route,interval,timezone,jstart_time_millis);
+            }catch (Exception e) {
+                e.printStackTrace();
+            }
         };
     }
 
@@ -770,9 +773,7 @@ public class RouteSelectionActivity extends AppCompatActivity
                 System.out.println("origin :"+origin+","+"dstn :"+dstnCord.getCoordinate());
                 System.out.println("here is route data :e"+new Gson().toJson(routes));
 
-                if(mRoutingDialog != null) {
-                    mRoutingDialog.dismiss();
-                }
+
                 mapRoutes(routes, null);
            //     if(routes.size() > 1) {
            //         toast(RouteSelectionActivity.this, routes.size() + " routes returned.\n\nChoose one to navigate by tapping on it.");
@@ -784,7 +785,7 @@ public class RouteSelectionActivity extends AppCompatActivity
 
             @Override
             public void onRequestMade() {
-                mRoutingDialog = displayProgressDialog("Routing", "Getting routes...");
+              //  mRoutingDialog = displayProgressDialog("Routing", "Getting routes...");
             }
 
             @Override
@@ -1053,11 +1054,7 @@ public class RouteSelectionActivity extends AppCompatActivity
 
  //           enableButton(mStartButton, true);
 
-            try {
-               new FetchCloudData().execute(getApplicationContext(),originCord,dstnCord,route,interval,timezone,jstart_time_millis);
-               }catch (Exception e) {
-                e.printStackTrace();
-            }
+
         }
     }
 
@@ -1149,19 +1146,31 @@ public class RouteSelectionActivity extends AppCompatActivity
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
+            if(mRoutingDialog !=null){
+                mRoutingDialog.dismiss();
+            }
             try {
                 Output output = new Gson().fromJson(result, Output.class);
                 if(output!=null) {
+
                     ((TextView)findViewById(R.id.distance)).setText("("+output.getDistance()+")");
                     ((TextView)findViewById(R.id.duration)).setText(output.getDuration());
                     puttomap(output);
                 }
+
             }catch (Exception e){
-                e.fillInStackTrace();
+                e.printStackTrace();
+                complain("Error fetching Weather Data for Given Route\nPlease Retry!!!");
             }
+
+
         }
 
-
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mRoutingDialog = displayProgressDialog("Routing", "Fetching Data...");
+        }
 
         @Override
         protected String doInBackground(Object[] objects) {

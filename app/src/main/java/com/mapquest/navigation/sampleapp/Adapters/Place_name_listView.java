@@ -70,8 +70,8 @@ public class Place_name_listView extends BaseAdapter {
         } else {
             holder = (ViewHolder) view.getTag();
         }
-        holder.name.setText(arraylist.get(position).getName());
-        holder.number.setText(arraylist.get(position).getAdress());
+        holder.name.setText(arraylist.get(position).getAdress());
+        holder.number.setText(arraylist.get(position).getName());
 
         return view;
     }

@@ -93,7 +93,7 @@ public class SelectPlace extends AppCompatActivity
                 }catch (Error e){
                     System.out.println("save fn error");
                 }
-                Toast.makeText(getApplicationContext(),recentSearches.get(arg2).getName(),Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(),recentSearches.get(arg2).getAdress(),Toast.LENGTH_LONG).show();
                 if(getIntent().getIntExtra("data",0) == 0) {
                     RouteSelectionActivity.origin.setText(recentSearches.get(arg2).getAdress());
                     originCord =recentSearches.get(arg2).getLatLng();
@@ -127,7 +127,7 @@ public class SelectPlace extends AppCompatActivity
 
         }
 
-        Thread thread =new Thread(new PlaceSaver(sd,new MPlace(mqId,displayName,displayName,coordinate)));
+        Thread thread =new Thread(new PlaceSaver(sd,new MPlace(mqId,"",displayName,coordinate)));
         thread.start();
         finish();
       //   this.finish();
