@@ -310,7 +310,7 @@ public class Subscription extends AppCompatActivity implements IabBroadcastRecei
                     default:pack="";
                 }
                 TextView tvTimeRemaining = (TextView)findViewById(R.id.tvTimeRemaining);
-                tvTimeRemaining.setVisibility(View.VISIBLE);
+                findViewById(R.id.llTimeRemaining).setVisibility(View.VISIBLE);
                 tvTimeRemaining.setText(String.format(Locale.ENGLISH, "You are Subscribed to %s Pack", pack));
 
         }
@@ -627,7 +627,7 @@ public class Subscription extends AppCompatActivity implements IabBroadcastRecei
                btnSubscribe.setTextColor(getResources().getColor(R.color.loo_pre));
                     findViewById(R.id.btnStartTrial).setVisibility(GONE);
                     TextView tvTimeRemaining = (TextView)findViewById(R.id.tvTimeRemaining);
-                    tvTimeRemaining.setVisibility(View.VISIBLE);
+                    findViewById(R.id.llTimeRemaining).setVisibility(View.VISIBLE);
                     tvTimeRemaining.setText(String.format(Locale.ENGLISH, "You are Subscribed to %s Pack", pack));
 
 //                    startActivity(new Intent(Subscription.this,MapActivity.class));
