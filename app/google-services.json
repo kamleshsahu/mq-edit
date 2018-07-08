@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "11075859411",
+    "firebase_url": "https://mapquest-weather.firebaseio.com",
+    "project_id": "mapquest-weather",
+    "storage_bucket": "mapquest-weather.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:11075859411:android:216ba3c3a0817d00",
+        "android_client_info": {
+          "package_name": "com.kamlesh.mapquestapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "11075859411-rd6f1lms3gb50uhf3g7hd359qjk2baao.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.kamlesh.mapquestapp",
+            "certificate_hash": "6567d97298eb87b00c458703414cffc27d8fbea9"
+          }
+        },
+        {
+          "client_id": "11075859411-vj91rd9j67kufsu7ka2f4repl2e40pcs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC0U1XEDMya_0z8yytkev-8H4iPLfJ_DdQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "11075859411-vj91rd9j67kufsu7ka2f4repl2e40pcs.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

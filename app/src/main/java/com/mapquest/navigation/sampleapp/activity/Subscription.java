@@ -89,10 +89,10 @@ public class Subscription extends AppCompatActivity implements IabBroadcastRecei
 //    static final String SKU_GAS = "gas";
 
     // SKU for our subscription (infinite gas)
-    static final String SKU_INFINITE_GAS_MONTHLY = "infinite_gas_monthly";
+    static final String SKU_INFINITE_GAS_MONTHLY = "monthly";
     static final String SKU_INFINITE_GAS_QUATERLY = "quaterly";
     static final String SKU_INFINITE_GAS_HALFYEARLY = "halfyearly";
-    static final String SKU_INFINITE_GAS_YEARLY = "infinite_gas_yearly";
+    static final String SKU_INFINITE_GAS_YEARLY = "yearly";
 
     // (arbitrary) request code for the purchase flow
     static final int RC_REQUEST = 10001;

@@ -45,6 +45,7 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.gson.Gson;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
@@ -240,10 +241,10 @@ public class RouteSelectionActivity extends AppCompatActivity
     IabBroadcastReceiver mBroadcastReceiver;
     Trialy mTrialy;
 
-    String SKU_INFINITE_GAS_MONTHLY = "monthly_01";
+    String SKU_INFINITE_GAS_MONTHLY = "monthly";
     String SKU_INFINITE_GAS_QUATERLY = "quaterly";
     String SKU_INFINITE_GAS_HALFYEARLY = "halfyearly";
-    String SKU_INFINITE_GAS_YEARLY = "yearly_12";
+    String SKU_INFINITE_GAS_YEARLY = "yearly";
 
     boolean mSubscribedToInfiniteGas = true;
     boolean mAutoRenewEnabled = false;
@@ -254,13 +255,15 @@ public class RouteSelectionActivity extends AppCompatActivity
     static long jstart_time_millis;
     int day,month,year,hour,min;
      ExpandableLayout expandableLayout;
+
+    private FirebaseAnalytics mFirebaseAnalytics;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.main_activity);
-
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
         mTrialy = new Trialy(this, TRIALY_APP_KEY);
         mTrialy.checkTrial(TRIALY_SKU, mTrialyCallback);
 //Expandable view...................................................................................
@@ -292,7 +295,7 @@ public class RouteSelectionActivity extends AppCompatActivity
         time=findViewById(R.id.time);
 
         day = datePicker.getDayOfMonth();
-        month = datePicker.getMonth() + 1;
+        month = datePicker.getMonth() ;
         year = datePicker.getYear();
 
 
@@ -358,7 +361,7 @@ public class RouteSelectionActivity extends AppCompatActivity
                 findViewById(R.id.timecheck).setVisibility(View.VISIBLE);
                 StartSmartAnimation.startAnimation(     findViewById(R.id.timecheck), AnimationType.SlideInUp , 0 , 0 , true );
                 day = datePicker.getDayOfMonth();
-                month = datePicker.getMonth() + 1;
+                month = datePicker.getMonth();
                 year = datePicker.getYear();
                 date.setText(","+day+" "+MONTH[month]+" "+String.valueOf(year).replace("20",""));
 
@@ -1083,21 +1086,32 @@ public class RouteSelectionActivity extends AppCompatActivity
 
     public void puttomap(Output output){
         if(output != null) {
-            List<Step> steps = output.getSteps();
-            link.setAdapter(new DragupListAdapter(getApplicationContext(), output.getSteps()));
-            //      if (route.getLegs().get(0).getDuration().getText() != null) {
-            slidingUpPanelLayout.setPanelHeight(getApplicationContext().getResources().getDimensionPixelSize(R.dimen.dragupsize));
-            //     }
-            for (int k = 0; k < steps.size(); k++) {
-                markLocationwithIcon(new LatLng(steps.get(k).getStep().getStartPoint().getLat(), steps.get(k).getStep().getStartPoint().getLng()), R.color.marker_orange, steps.get(k).getWlist().getIcon(),steps.get(k).getArrtime());
+            try {
+                if(!output.getSteps().isEmpty()) {
+                    List<Step> steps = output.getSteps();
+                    link.setAdapter(new DragupListAdapter(getApplicationContext(), output.getSteps()));
+                    //      if (route.getLegs().get(0).getDuration().getText() != null) {
+                    slidingUpPanelLayout.setPanelHeight(getApplicationContext().getResources().getDimensionPixelSize(R.dimen.dragupsize));
+                    //     }
+                    for (int k = 0; k < steps.size(); k++) {
+                        markLocationwithIcon(new LatLng(steps.get(k).getStep().getStartPoint().getLat(), steps.get(k).getStep().getStartPoint().getLng()), R.color.marker_orange, steps.get(k).getWlist().getIcon(), steps.get(k).getArrtime());
+                    }
+                }else{
+                    complain("No Weather data from cloud!!!!");
+                }
+                List<Item> interm = output.getItems();
+                for (int k = 0; k < interm.size(); k++) {
+                    markLocationwithIcon(new LatLng(interm.get(k).getPoint().getLat(), interm.get(k).getPoint().getLng()), R.color.marker_blue, interm.get(k).getWlist().getIcon(), interm.get(k).getArrtime());
+                }
+            }catch (Exception e){
+                e.printStackTrace();
             }
-
-            List<Item> interm = output.getItems();
-            for (int k = 0; k < interm.size(); k++) {
-                markLocationwithIcon(new LatLng(interm.get(k).getPoint().getLat(), interm.get(k).getPoint().getLng()), R.color.marker_blue, interm.get(k).getWlist().getIcon(),steps.get(k).getArrtime());
-            }
+        }else{
+            complain("No Weather data from cloud!!!!");
         }
     }
+
+
 
 //    private void initGpsButton() {
 //        mGpsCenterOnUserLocationButton.setVisibility(View.VISIBLE);
@@ -1150,13 +1164,13 @@ public class RouteSelectionActivity extends AppCompatActivity
                 mRoutingDialog.dismiss();
             }
             try {
-                Output output = new Gson().fromJson(result, Output.class);
+                final Output output = new Gson().fromJson(result, Output.class);
                 if(output!=null) {
 
                     ((TextView)findViewById(R.id.distance)).setText("("+output.getDistance()+")");
                     ((TextView)findViewById(R.id.duration)).setText(output.getDuration());
                     puttomap(output);
-                }
+                    }
 
             }catch (Exception e){
                 e.printStackTrace();

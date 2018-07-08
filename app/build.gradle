@@ -1,11 +1,11 @@
 apply plugin: 'com.android.application'
 
-def defaultAppVersionCode = '9'
+def defaultAppVersionCode = '11'
 def appVersionCode = System.getProperty('versionCode', defaultAppVersionCode).toInteger()
 
 repositories {
     maven { url 'https://maven.google.com' }
-    maven { url "http://artifactory.cloud.mapquest.com/artifactory/et-android-binaries"}
+    maven { url "http://artifactory.cloud.mapquest.com/artifactory/et-android-binaries" }
 }
 
 android {
@@ -25,14 +25,14 @@ android {
         minSdkVersion 21
         targetSdkVersion 27
         versionCode appVersionCode
-        versionName "3.3.0"
+        versionName "3.5.0"
         multiDexEnabled true
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-  //          debuggable true
+            //          debuggable true
             signingConfig signingConfigs.config
         }
     }
@@ -49,6 +49,8 @@ def getApiKey() {
 }
 
 dependencies {
+    implementation 'com.google.firebase:firebase-core:11.8.0'
+    implementation 'com.google.firebase:firebase-crash:11.8.0'
     compile 'com.android.support:appcompat-v7:27.1.0'
     compile 'com.android.support.constraint:constraint-layout:1.1.0-beta2'
     compile 'com.android.support:design:27.1.0'
@@ -78,3 +80,5 @@ dependencies {
     compile 'org.jbundle.util.osgi.wrapped:org.jbundle.util.osgi.wrapped.org.apache.http.client:4.1.2'
     compile 'io.trialy.library:trialy:1.0.7'
 }
+
+apply plugin: 'com.google.gms.google-services'
