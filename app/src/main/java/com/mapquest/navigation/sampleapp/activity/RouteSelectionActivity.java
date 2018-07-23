@@ -76,6 +76,7 @@ import com.mapquest.navigation.model.location.Coordinate;
 import com.mapquest.navigation.model.location.Destination;
 import com.mapquest.navigation.sampleapp.Adapters.DragupListAdapter;
 import com.mapquest.navigation.sampleapp.BuildConfig;
+
 import com.mapquest.navigation.sampleapp.MQNavigationSampleApplication;
 
 import com.mapquest.navigation.sampleapp.Models.Input;
@@ -566,9 +567,24 @@ public class RouteSelectionActivity extends AppCompatActivity
     }
 
     private void requestData(){
+        double olat=0,olon=0,dlat=0,dlon=0;
+      try {
+          olat = originCord.getLatitude();
+          olon = originCord.getLongitude();
+          dlat = dstnCord.getLatitude();
+          dlon = dstnCord.getLongitude();
+      }catch (Exception e){
+          Log.d("coordinatess","null");
+      }
+
+
         if (originCord==null||dstnCord==null){
             Toast.makeText(mApp, "Please Enter Source & Destination.", Toast.LENGTH_SHORT).show();
-        }else {
+        }
+        else if(olat==dlat&&olon==dlon){
+            Toast.makeText(mApp, "Source and Destination must be different.", Toast.LENGTH_SHORT).show();
+        }
+        else {
             mMapController.clear();
             expandableLayout.toggle();
             mDestinationLocations = new ArrayList<>();
@@ -729,6 +745,7 @@ public class RouteSelectionActivity extends AppCompatActivity
 
     @Override
     protected void onResume() {
+        // register connection status listener
         Log.d(TAG, "onResume()");
         super.onResume();
 
@@ -1420,5 +1437,4 @@ public class RouteSelectionActivity extends AppCompatActivity
         }
     }
 //..................................................................................................
-
 }
