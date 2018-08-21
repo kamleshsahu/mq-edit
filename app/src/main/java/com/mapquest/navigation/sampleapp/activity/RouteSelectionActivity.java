@@ -45,6 +45,20 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Cache;
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.Network;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.BasicNetwork;
+import com.android.volley.toolbox.DiskBasedCache;
+import com.android.volley.toolbox.HurlStack;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.gson.Gson;
 import com.mapbox.mapboxsdk.Mapbox;
@@ -107,11 +121,13 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -258,6 +274,8 @@ public class RouteSelectionActivity extends AppCompatActivity
      ExpandableLayout expandableLayout;
 
     private FirebaseAnalytics mFirebaseAnalytics;
+
+    RequestQueue requestQueue;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate()");
@@ -268,6 +286,11 @@ public class RouteSelectionActivity extends AppCompatActivity
         mTrialy = new Trialy(this, TRIALY_APP_KEY);
         mTrialy.checkTrial(TRIALY_SKU, mTrialyCallback);
 //Expandable view...................................................................................
+        Cache cache = new DiskBasedCache(getCacheDir(),1024*1024);
+        Network network = new BasicNetwork(new HurlStack());
+        requestQueue = new RequestQueue(cache,network);
+        requestQueue.start();
+
 
         expandableLayout = findViewById(R.id.expandable_layout);
         final Handler handler = new Handler();
@@ -278,6 +301,7 @@ public class RouteSelectionActivity extends AppCompatActivity
                 expandableLayout.expand();
             }
         }, 700);
+
 
         findViewById(R.id.exp).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -482,7 +506,7 @@ public class RouteSelectionActivity extends AppCompatActivity
 
 
 
-        origin.setOnClickListener(new View.OnClickListener() {
+        (findViewById(R.id.originbox)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent =new Intent(RouteSelectionActivity.this,SelectPlace.class);
@@ -491,7 +515,7 @@ public class RouteSelectionActivity extends AppCompatActivity
             }
         });
 
-        dstn.setOnClickListener(new View.OnClickListener() {
+        (findViewById(R.id.dstnbox)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent =new Intent(RouteSelectionActivity.this,SelectPlace.class);
@@ -567,6 +591,8 @@ public class RouteSelectionActivity extends AppCompatActivity
     }
 
     private void requestData(){
+        mMapController.clear();
+        clearMappedRoutes();
         double olat=0,olon=0,dlat=0,dlon=0;
       try {
           olat = originCord.getLatitude();
@@ -585,7 +611,7 @@ public class RouteSelectionActivity extends AppCompatActivity
             Toast.makeText(mApp, "Source and Destination must be different.", Toast.LENGTH_SHORT).show();
         }
         else {
-            mMapController.clear();
+
             expandableLayout.toggle();
             mDestinationLocations = new ArrayList<>();
             mDestinationLocations.add(dstnCord);
@@ -593,7 +619,8 @@ public class RouteSelectionActivity extends AppCompatActivity
             markOrigin(originCord);
             addDestinationToRoute(dstnCord, dstnCord.getMqId());
             try {
-                new FetchCloudData().execute(getApplicationContext(),originCord,dstnCord,route,interval,timezone,jstart_time_millis);
+            //    new FetchCloudData().execute(getApplicationContext(),originCord,dstnCord,route,interval,timezone,jstart_time_millis);
+                FetchCloudData(getApplicationContext(),originCord,dstnCord,route,interval,timezone,jstart_time_millis);
             }catch (Exception e) {
                 e.printStackTrace();
             }
@@ -601,32 +628,32 @@ public class RouteSelectionActivity extends AppCompatActivity
     }
 
 
-    private void requestLocationPermissions(LocationPermissionsResultListener permissionsResultListener) {
-        this.locationPermissionsResultListener = permissionsResultListener;
-
-        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-            // provide an additional rationale to the user if the permission was not granted
-            // and the user would benefit from additional context for the use of the permission
-            final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-            builder.setTitle("Location Permissions Required");
-            builder.setMessage("In Order to use the app you will need to accept the Location Permission request");
-
-            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    ActivityCompat.requestPermissions(RouteSelectionActivity.this,
-                            new String[] { Manifest.permission.ACCESS_FINE_LOCATION },
-                            REQUEST_LOCATION_PERMISSIONS);
-                }
-            });
-            builder.show();
-        } else {
-            // permission has not been granted yet, so request it directly
-            ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.ACCESS_FINE_LOCATION },
-                    REQUEST_LOCATION_PERMISSIONS);
-        }
-    }
+//    private void requestLocationPermissions(LocationPermissionsResultListener permissionsResultListener) {
+//        this.locationPermissionsResultListener = permissionsResultListener;
+//
+//        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+//            // provide an additional rationale to the user if the permission was not granted
+//            // and the user would benefit from additional context for the use of the permission
+//            final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//
+//            builder.setTitle("Location Permissions Required");
+//            builder.setMessage("In Order to use the app you will need to accept the Location Permission request");
+//
+//            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+//                @Override
+//                public void onClick(DialogInterface dialogInterface, int i) {
+//                    ActivityCompat.requestPermissions(RouteSelectionActivity.this,
+//                            new String[] { Manifest.permission.ACCESS_FINE_LOCATION },
+//                            REQUEST_LOCATION_PERMISSIONS);
+//                }
+//            });
+//            builder.show();
+//        } else {
+//            // permission has not been granted yet, so request it directly
+//            ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.ACCESS_FINE_LOCATION },
+//                    REQUEST_LOCATION_PERMISSIONS);
+//        }
+//    }
 
     // callback received when permission request has been acted on by user; so call our listener with the result
     @Override
@@ -771,7 +798,9 @@ public class RouteSelectionActivity extends AppCompatActivity
     @Override
     protected void onStop() {
         mMap.onStop();
-
+        if (requestQueue != null) {
+            requestQueue.cancelAll(TAG);
+        }
         super.onStop();
     }
 
@@ -814,6 +843,7 @@ public class RouteSelectionActivity extends AppCompatActivity
                 Log.d(TAG, "RoutesResponseListener.onRequestFailed: statusCode: " + httpStatusCode + "; exception: " + exception);
 
                 mRoutingDialog.dismiss();
+                System.out.println("here is the fk error..could not get route");
                 displayInformationalDialog("Error",
                         "Sorry, couldn't get routes. :(\n\nCode: " + httpStatusCode
                                 + "\nException: " + exception);
@@ -829,6 +859,9 @@ public class RouteSelectionActivity extends AppCompatActivity
         try {
             mRouteService.requestRoutes(startingCoordinate, destinationLocations, routeOptions, responseListener);
         } catch (IllegalArgumentException e) {
+            System.out.println("here is the fk bug in try inside retrieve route");
+            e.printStackTrace();
+            System.out.println("localised msg :"+e.getLocalizedMessage());
             toast(RouteSelectionActivity.this, e.getLocalizedMessage());
         }
     }
@@ -1165,23 +1198,38 @@ public class RouteSelectionActivity extends AppCompatActivity
 //    }
 //..................................................................................................
 
-    class FetchCloudData extends AsyncTask<Object,Object,String> {
+    void FetchCloudData(Object... objects){
+                   Context context= (Context) objects[0];
+            Coordinate origincord= (Coordinate) objects[1];
+            Coordinate dstncord =(Coordinate)objects[2];
+            long route=(long)objects[3];
+            long interval=(long)objects[4];
+            String timezone=(String)objects[5];
+            long time1=(long)objects[6];
 
-        Context context;
-        Coordinate origincord,dstncord;
-        long route=0;
-        long interval=50000;
-        String timezone="";
-        long time=0;
+        String url ="https://nk0031nuf4.execute-api.ap-south-1.amazonaws.com/dev";
+                    Input input=new Input();
+                    input.setOrigin(new com.mapquest.navigation.sampleapp.Models.LatLng(((float) origincord.getLatitude()), ((float) origincord.getLongitude())));
+                    input.setDestination(new com.mapquest.navigation.sampleapp.Models.LatLng(((float)dstncord.getLatitude()),((float)dstncord.getLongitude())));
+                    input.setRoute(route);
+                    input.setInterval(interval);
+                    input.setTimeZone(timezone);
+                    input.setTime(time1);
 
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
+
+                    final String requestBody =new Gson().toJson(input);
+
+        mRoutingDialog = displayProgressDialog("Routing", "Fetching Data...");
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        System.out.println("response :"+response);
             if(mRoutingDialog !=null){
                 mRoutingDialog.dismiss();
             }
             try {
-                final Output output = new Gson().fromJson(result, Output.class);
+                final Output output = new Gson().fromJson(response, Output.class);
                 if(output!=null) {
 
                     ((TextView)findViewById(R.id.distance)).setText("("+output.getDistance()+")");
@@ -1193,75 +1241,142 @@ public class RouteSelectionActivity extends AppCompatActivity
                 e.printStackTrace();
                 complain("Error fetching Weather Data for Given Route\nPlease Retry!!!");
             }
-
-
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            mRoutingDialog = displayProgressDialog("Routing", "Fetching Data...");
-        }
-
-        @Override
-        protected String doInBackground(Object[] objects) {
-            context= (Context) objects[0];
-            origincord= (Coordinate) objects[1];
-            dstncord =(Coordinate)objects[2];
-            route=(long)objects[3];
-            interval=(long)objects[4];
-            timezone=(String)objects[5];
-            time=(long)objects[6];
-
-            try {
-                ConnectivityManager mgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-                NetworkInfo netInfo = mgr.getActiveNetworkInfo();
-
-                if (netInfo != null && netInfo.isConnected()) {
-                    HttpClient client = new DefaultHttpClient();
-                    HttpResponse response = null;
-                 //   String url="https://ou4ptj7z2b.execute-api.ap-south-1.amazonaws.com/dev";
-                    String url ="https://nk0031nuf4.execute-api.ap-south-1.amazonaws.com/dev";
-                    HttpPost request = new HttpPost(url);
-
-                    Input input=new Input();
-                    input.setOrigin(new com.mapquest.navigation.sampleapp.Models.LatLng(((float) origincord.getLatitude()), ((float) origincord.getLongitude())));
-                    input.setDestination(new com.mapquest.navigation.sampleapp.Models.LatLng(((float)dstncord.getLatitude()),((float)dstncord.getLongitude())));
-                    input.setRoute(route);
-                    input.setInterval(interval);
-                    input.setTimeZone(timezone);
-                    input.setTime(time);
-
-
-                    String json =new Gson().toJson(input);
-                    System.out.println("hre is json :\n"+json);
-                    StringEntity entity = new StringEntity(json);
-                    request.setEntity(entity);
-                    request.setHeader("Accept", "application/json");
-                    request.setHeader("Content-type", "application/json");
-
-
-                    BufferedReader rd=null;
-
-                    response = client.execute(request);
-                    rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-                    String line="";
-                    StringBuilder sb=new StringBuilder();
-                    while ((line=rd.readLine())!=null){
-                        sb.append(line);
+                       
                     }
-                    return sb.toString();
-                }else{
-                    return "NoInternet";
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println(error);
+                mRoutingDialog.dismiss();
+                complain(error.toString());
             }
-            return null;
 
-        }
+            }){
+
+                @Override
+                public String getBodyContentType() {
+                return "application/json; charset=utf-8";
+            }
+
+                @Override
+                public byte[] getBody() throws AuthFailureError {
+                try {
+                    return requestBody == null ? null : requestBody.getBytes("utf-8");
+                } catch (UnsupportedEncodingException uee) {
+                    VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
+                    return null;
+                }
+            }
+
+        };
+        stringRequest.setRetryPolicy(new DefaultRetryPolicy(30000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        requestQueue.add(stringRequest);
+
     }
+
+
+
+
+
+//    class FetchCloudData extends AsyncTask<Object,Object,String> {
+//
+//        Context context;
+//        Coordinate origincord,dstncord;
+//        long route=0;
+//        long interval=50000;
+//        String timezone="";
+//        long time=0;
+//
+//        @Override
+//        protected void onPostExecute(String result) {
+//            super.onPostExecute(result);
+//            if(mRoutingDialog !=null){
+//                mRoutingDialog.dismiss();
+//            }
+//            try {
+//                final Output output = new Gson().fromJson(result, Output.class);
+//                if(output!=null) {
+//
+//                    ((TextView)findViewById(R.id.distance)).setText("("+output.getDistance()+")");
+//                    ((TextView)findViewById(R.id.duration)).setText(output.getDuration());
+//                    puttomap(output);
+//                    }
+//
+//            }catch (Exception e){
+//                e.printStackTrace();
+//                complain("Error fetching Weather Data for Given Route\nPlease Retry!!!");
+//            }
+//
+//
+//        }
+//
+//        @Override
+//        protected void onPreExecute() {
+//            super.onPreExecute();
+//            mRoutingDialog = displayProgressDialog("Routing", "Fetching Data...");
+//        }
+//
+//        @Override
+//        protected String doInBackground(Object[] objects) {
+//            context= (Context) objects[0];
+//            origincord= (Coordinate) objects[1];
+//            dstncord =(Coordinate)objects[2];
+//            route=(long)objects[3];
+//            interval=(long)objects[4];
+//            timezone=(String)objects[5];
+//            time=(long)objects[6];
+//
+//            try {
+//                ConnectivityManager mgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+//                NetworkInfo netInfo = mgr.getActiveNetworkInfo();
+//
+//                if (netInfo != null && netInfo.isConnected()) {
+//                    HttpClient client = new DefaultHttpClient();
+//                    HttpResponse response = null;
+//                 //   String url="https://ou4ptj7z2b.execute-api.ap-south-1.amazonaws.com/dev";
+//                    String url ="https://nk0031nuf4.execute-api.ap-south-1.amazonaws.com/dev";
+//                    HttpPost request = new HttpPost(url);
+//
+//                    Input input=new Input();
+//                    input.setOrigin(new com.mapquest.navigation.sampleapp.Models.LatLng(((float) origincord.getLatitude()), ((float) origincord.getLongitude())));
+//                    input.setDestination(new com.mapquest.navigation.sampleapp.Models.LatLng(((float)dstncord.getLatitude()),((float)dstncord.getLongitude())));
+//                    input.setRoute(route);
+//                    input.setInterval(interval);
+//                    input.setTimeZone(timezone);
+//                    input.setTime(time);
+//
+//
+//                    String json =new Gson().toJson(input);
+//                    System.out.println("hre is json :\n"+json);
+//                    StringEntity entity = new StringEntity(json);
+//                    request.setEntity(entity);
+//                    request.setHeader("Accept", "application/json");
+//                    request.setHeader("Content-type", "application/json");
+//
+//
+//                    BufferedReader rd=null;
+//
+//                    response = client.execute(request);
+//                    rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+//                    String line="";
+//                    StringBuilder sb=new StringBuilder();
+//                    while ((line=rd.readLine())!=null){
+//                        sb.append(line);
+//                    }
+//                    return sb.toString();
+//                }else{
+//                    return "NoInternet";
+//                }
+//
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//            return null;
+//
+//        }
+//    }
 
     IabHelper.QueryInventoryFinishedListener mGotInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
         public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
@@ -1401,6 +1516,10 @@ public class RouteSelectionActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()) {
+            case R.id.km10:
+                item.setChecked(true);
+                interval=10000;
+                return true;
             case R.id.km20:
                 item.setChecked(true);
                 interval=20000;
@@ -1419,7 +1538,7 @@ public class RouteSelectionActivity extends AppCompatActivity
                 interval=50000;
                 return true;
             case R.id.action_retry:
-                expandableLayout.toggle();
+               // expandableLayout.toggle();
                 requestData();
                 Toast.makeText(this, "Retrying...", Toast.LENGTH_SHORT).show();
                 return true;

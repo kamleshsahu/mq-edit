@@ -27,6 +27,11 @@
             <group android:checkableBehavior="single">
                 <item
                     android:fontFamily="sans-serif-thin"
+                    android:id="@+id/km10"
+                    android:orderInCategory="1"
+                    android:title="Every 10 Km"/>
+                <item
+                    android:fontFamily="sans-serif-thin"
                     android:id="@+id/km20"
                     android:orderInCategory="1"
                     android:title="Every 20 Km"/>
