@@ -1,8 +1,10 @@
 package com.mapquest.navigation.sampleapp.activity;
 
 import android.Manifest;
+import android.app.AppOpsManager;
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -157,7 +159,8 @@ public class RouteSelectionActivity extends AppCompatActivity
 //        CurrentLocationProvider
          SearchAheadFragment.OnSearchResultSelectedListener
         , IabBroadcastReceiver.IabBroadcastListener{
-
+    static long jstart_date_millis, jstart_time_millis;
+    static int mYear,mMonth,mDay, mHour, mMinute;
     private static final String TAG = LogUtil.generateLoggingTag(RouteSelectionActivity.class);
 
     private static final int REQUEST_LOCATION_PERMISSIONS = 0;
@@ -238,8 +241,8 @@ public class RouteSelectionActivity extends AppCompatActivity
     TimePicker timePicker;
     RelativeLayout datePickerCV,timePickerCV;
 
-    TextView date;
-    TextView time;
+    TextView departAt;
+//    TextView time;
     long route=0;
     long interval=50000;
     String timezone="";
@@ -269,13 +272,14 @@ public class RouteSelectionActivity extends AppCompatActivity
     String mInfiniteGasSku = "";
 
     final String[] MONTH = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
-    static long jstart_time_millis;
-    int day,month,year,hour,min;
+
      ExpandableLayout expandableLayout;
 
     private FirebaseAnalytics mFirebaseAnalytics;
 
     RequestQueue requestQueue;
+
+    Menu menu;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate()");
@@ -291,6 +295,7 @@ public class RouteSelectionActivity extends AppCompatActivity
         requestQueue = new RequestQueue(cache,network);
         requestQueue.start();
 
+        departAt=findViewById(R.id.date);
 
         expandableLayout = findViewById(R.id.expandable_layout);
         final Handler handler = new Handler();
@@ -309,131 +314,156 @@ public class RouteSelectionActivity extends AppCompatActivity
                 expandableLayout.toggle();
             }
         });
+
 //..................................................................................................
 
 //Date and Time Picker..............................................................................
-        datePicker=findViewById(R.id.datepicker);
-        timePicker=findViewById(R.id.timepicker);
-        datePickerCV=findViewById(R.id.datepickerCV);
-        timePickerCV=findViewById(R.id.timepickerCV);
-        date=findViewById(R.id.date);
-        time=findViewById(R.id.time);
-
-        day = datePicker.getDayOfMonth();
-        month = datePicker.getMonth() ;
-        year = datePicker.getYear();
-
-
-
-        date.setText(","+day+" "+MONTH[month]+" "+String.valueOf(year).replace("20",""));
-
-        hour = timePicker.getCurrentHour();
-        min = timePicker.getCurrentMinute();
-        String minute = null;
-
-        if (min<10){
-            minute="0"+String.valueOf(min);
-
-            time.setText(hour+":"+minute);
-        }else
-            time.setText(hour+":"+min);
+//        datePicker=findViewById(R.id.datepicker);
+//        timePicker=findViewById(R.id.timepicker);
+//        datePickerCV=findViewById(R.id.datepickerCV);
+//        timePickerCV=findViewById(R.id.timepickerCV);
+//        date=findViewById(R.id.date);
+//        time=findViewById(R.id.time);
+//
+//        day = datePicker.getDayOfMonth();
+//        month = datePicker.getMonth() ;
+//        year = datePicker.getYear();
+//
+//
+//
+//        date.setText(","+day+" "+MONTH[month]+" "+String.valueOf(year).replace("20",""));
+//
+//        hour = timePicker.getCurrentHour();
+//        min = timePicker.getCurrentMinute();
+//        String minute = null;
+//
+//        if (min<10){
+//            minute="0"+String.valueOf(min);
+//
+//            time.setText(hour+":"+minute);
+//        }else
+//            time.setText(hour+":"+min);
+//
+//        final Calendar c = Calendar.getInstance();
+//        timezone=c.getTimeZone().getID();
+//        if(timezone.contains("/")){
+//            timezone=timezone.replace("/",".");
+//        }
+//        jstart_time_millis=c.getTimeInMillis();
+//
+//
+//
+//        findViewById(R.id.datepickerclicker).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                handler.postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        //Do something after 100ms
+//                        datePickerCV.setVisibility(View.VISIBLE);
+//                        findViewById(R.id.datecheck).setVisibility(View.VISIBLE);
+//                    }
+//                }, 300);
+//
+//
+//                StartSmartAnimation.startAnimation( datePickerCV , AnimationType.SlideInDown , 700 , 0 , true );
+//                StartSmartAnimation.startAnimation( findViewById(R.id.datecheck) , AnimationType.SlideInUp , 700 , 0 , true );
+//
+//           //     datePicker.setMinDate(System.currentTimeMillis() - 1000);
+//
+//            }
+//        });
+//
+//
+//
+//        findViewById(R.id.datecheck).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                handler.postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        //Do something after 100ms
+//                        timePickerCV.setVisibility(View.VISIBLE);
+//                        datePickerCV.setVisibility(View.GONE);
+//                    }
+//                }, 700);
+//                StartSmartAnimation.startAnimation( datePickerCV , AnimationType.SlideOutUp , 700 , 0 , true );
+//                StartSmartAnimation.startAnimation( timePickerCV , AnimationType.SlideInDown , 1000 , 0 , true );
+//                findViewById(R.id.timecheck).setVisibility(View.VISIBLE);
+//                StartSmartAnimation.startAnimation(     findViewById(R.id.timecheck), AnimationType.SlideInUp , 0 , 0 , true );
+//                day = datePicker.getDayOfMonth();
+//                month = datePicker.getMonth();
+//                year = datePicker.getYear();
+//                date.setText(","+day+" "+MONTH[month]+" "+String.valueOf(year).replace("20",""));
+//
+//                Calendar cal = Calendar.getInstance();
+//                cal.set(Calendar.DAY_OF_MONTH,day);
+//                cal.set(Calendar.MONTH,month-1);
+//                cal.set(Calendar.YEAR, year);
+//                cal.set(Calendar.HOUR_OF_DAY,0);
+//                cal.set(Calendar.MINUTE,0);
+//
+//                jstart_time_millis=cal.getTimeInMillis();
+//                findViewById(R.id.datecheck).setVisibility(View.GONE);
+//
+//
+//            }
+//        });
+//        findViewById(R.id.timecheck).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//
+//                handler.postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        //Do something after 100ms
+//                        timePickerCV.setVisibility(View.GONE);
+//                        findViewById(R.id.timecheck).setVisibility(View.GONE);
+//                    }
+//                }, 700);
+//
+//                StartSmartAnimation.startAnimation( timePickerCV , AnimationType.SlideOutUp , 700 , 0 , true );
+//                StartSmartAnimation.startAnimation( findViewById(R.id.timecheck) , AnimationType.SlideOutDown , 700 , 0 , true );
+//                hour = timePicker.getCurrentHour();
+//                min = timePicker.getCurrentMinute();
+//                String minute = null;
+//                if (min<10){
+//                    minute="0"+String.valueOf(min);
+//                    time.setText(hour+":"+minute);
+//                }else
+//                    time.setText(hour+":"+min);
+//
+//                jstart_time_millis+=(hour*60+min)*60*1000;
+//            }
+//
+//        });
 
         final Calendar c = Calendar.getInstance();
         timezone=c.getTimeZone().getID();
-        if(timezone.contains("/")){
-            timezone=timezone.replace("/",".");
-        }
-        jstart_time_millis=c.getTimeInMillis();
+        mYear = c.get(Calendar.YEAR);
+        mMonth = c.get(Calendar.MONTH);
+        mDay = c.get(Calendar.DAY_OF_MONTH);
+        mHour = c.get(Calendar.HOUR_OF_DAY);
+        mMinute = c.get(Calendar.MINUTE);
+        jstart_date_millis=c.getTimeInMillis()-((mHour*60+mMinute)*60*1000);
+        jstart_time_millis=(mHour*60+mMinute)*60*1000;
+
+
+        String sHour = mHour < 10 ? "0" + mHour : "" + mHour;
+        String sMinute = mMinute < 10 ? "0" + mMinute : "" + mMinute;
+        String curr_time = sHour + ":" + sMinute;
+        //       time.setText(curr_time);
+        departAt.setText(curr_time+","+mDay+" "+MONTH[mMonth]+" "+String.valueOf(mYear).substring(2));
 
 
 
-        findViewById(R.id.datepickerclicker).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        //Do something after 100ms
-                        datePickerCV.setVisibility(View.VISIBLE);
-                        findViewById(R.id.datecheck).setVisibility(View.VISIBLE);
-                    }
-                }, 300);
-
-
-                StartSmartAnimation.startAnimation( datePickerCV , AnimationType.SlideInDown , 700 , 0 , true );
-                StartSmartAnimation.startAnimation( findViewById(R.id.datecheck) , AnimationType.SlideInUp , 700 , 0 , true );
-
-           //     datePicker.setMinDate(System.currentTimeMillis() - 1000);
-
-            }
-        });
 
 
 
-        findViewById(R.id.datecheck).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        //Do something after 100ms
-                        timePickerCV.setVisibility(View.VISIBLE);
-                        datePickerCV.setVisibility(View.GONE);
-                    }
-                }, 700);
-                StartSmartAnimation.startAnimation( datePickerCV , AnimationType.SlideOutUp , 700 , 0 , true );
-                StartSmartAnimation.startAnimation( timePickerCV , AnimationType.SlideInDown , 1000 , 0 , true );
-                findViewById(R.id.timecheck).setVisibility(View.VISIBLE);
-                StartSmartAnimation.startAnimation(     findViewById(R.id.timecheck), AnimationType.SlideInUp , 0 , 0 , true );
-                day = datePicker.getDayOfMonth();
-                month = datePicker.getMonth();
-                year = datePicker.getYear();
-                date.setText(","+day+" "+MONTH[month]+" "+String.valueOf(year).replace("20",""));
-
-                Calendar cal = Calendar.getInstance();
-                cal.set(Calendar.DAY_OF_MONTH,day);
-                cal.set(Calendar.MONTH,month-1);
-                cal.set(Calendar.YEAR, year);
-                cal.set(Calendar.HOUR_OF_DAY,0);
-                cal.set(Calendar.MINUTE,0);
-
-                jstart_time_millis=cal.getTimeInMillis();
-                findViewById(R.id.datecheck).setVisibility(View.GONE);
-
-
-            }
-        });
-        findViewById(R.id.timecheck).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        //Do something after 100ms
-                        timePickerCV.setVisibility(View.GONE);
-                        findViewById(R.id.timecheck).setVisibility(View.GONE);
-                    }
-                }, 700);
-
-                StartSmartAnimation.startAnimation( timePickerCV , AnimationType.SlideOutUp , 700 , 0 , true );
-                StartSmartAnimation.startAnimation( findViewById(R.id.timecheck) , AnimationType.SlideOutDown , 700 , 0 , true );
-                hour = timePicker.getCurrentHour();
-                min = timePicker.getCurrentMinute();
-                String minute = null;
-                if (min<10){
-                    minute="0"+String.valueOf(min);
-                    time.setText(hour+":"+minute);
-                }else
-                    time.setText(hour+":"+min);
-
-                jstart_time_millis+=(hour*60+min)*60*1000;
-            }
-
-        });
 //..................................................................................................
         ButterKnife.bind(this);
         sd = this.getSharedPreferences(getApplication().getPackageName(), Context.MODE_PRIVATE);
+
         origin=findViewById(R.id.origin);
         dstn=findViewById(R.id.dstn);
         Go=findViewById(R.id.go);
@@ -620,7 +650,7 @@ public class RouteSelectionActivity extends AppCompatActivity
             addDestinationToRoute(dstnCord, dstnCord.getMqId());
             try {
             //    new FetchCloudData().execute(getApplicationContext(),originCord,dstnCord,route,interval,timezone,jstart_time_millis);
-                FetchCloudData(getApplicationContext(),originCord,dstnCord,route,interval,timezone,jstart_time_millis);
+                FetchCloudData(getApplicationContext(),originCord,dstnCord,route,interval,timezone,jstart_date_millis+jstart_time_millis);
             }catch (Exception e) {
                 e.printStackTrace();
             }
@@ -667,6 +697,7 @@ public class RouteSelectionActivity extends AppCompatActivity
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
+
 
 
 
@@ -1137,7 +1168,7 @@ public class RouteSelectionActivity extends AppCompatActivity
     public void puttomap(Output output){
         if(output != null) {
             try {
-                if(!output.getSteps().isEmpty()) {
+                if(output.getSteps()!=null && !output.getSteps().isEmpty()) {
                     List<Step> steps = output.getSteps();
                     link.setAdapter(new DragupListAdapter(getApplicationContext(), output.getSteps()));
                     //      if (route.getLegs().get(0).getDuration().getText() != null) {
@@ -1218,6 +1249,7 @@ public class RouteSelectionActivity extends AppCompatActivity
 
 
                     final String requestBody =new Gson().toJson(input);
+
 
         mRoutingDialog = displayProgressDialog("Routing", "Fetching Data...");
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
@@ -1509,13 +1541,41 @@ public class RouteSelectionActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main2, menu);
+        this.menu=menu;
+//        if(sd.getInt("intervalid",0)!=0){
+//            int intervalid=sd.getInt("intervalid",0);
+//            MenuItem item=menu.findItem(intervalid);
+//            switch (item.getItemId()) {
+//                case R.id.km10:
+//                    item.setChecked(true);
+//                    interval = 10000;
+//
+//                case R.id.km20:
+//                    item.setChecked(true);
+//                    interval = 20000;
+//
+//                case R.id.km30:
+//                    item.setChecked(true);
+//                    interval = 30000;
+//
+//                case R.id.km40:
+//                    item.setChecked(true);
+//                    interval = 40000;
+//
+//                case R.id.km50:
+//                    item.setChecked(true);
+//                    interval = 50000;
+//
+//            }
+//        }
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
+  //      sd.edit().putInt("intervalid",item.getItemId()).commit();
         switch (item.getItemId()) {
+
             case R.id.km10:
                 item.setChecked(true);
                 interval=10000;
@@ -1523,22 +1583,26 @@ public class RouteSelectionActivity extends AppCompatActivity
             case R.id.km20:
                 item.setChecked(true);
                 interval=20000;
+
                 return true;
             case R.id.km30:
                 item.setChecked(true);
                 interval=30000;
+
                 Toast.makeText(this, "30km", Toast.LENGTH_SHORT).show();
                 return true;
             case R.id.km40:
                 item.setChecked(true);
                 interval=40000;
+
                 return true;
             case R.id.km50:
                 item.setChecked(true);
                 interval=50000;
+
                 return true;
             case R.id.action_retry:
-               // expandableLayout.toggle();
+                expandableLayout.toggle();
                 requestData();
                 Toast.makeText(this, "Retrying...", Toast.LENGTH_SHORT).show();
                 return true;
@@ -1556,4 +1620,70 @@ public class RouteSelectionActivity extends AppCompatActivity
         }
     }
 //..................................................................................................
+
+
+
+    public void datePicker(View view){
+
+        // Get Current Date
+
+
+        final DatePickerDialog datePickerDialog = new DatePickerDialog(this,
+                new DatePickerDialog.OnDateSetListener() {
+
+                    @Override
+                    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+
+                        departAt.setText(dayOfMonth + " " + MONTH[monthOfYear] + " " + String.valueOf(year).substring(2));
+                        Calendar cal = Calendar.getInstance();
+                        cal.set(Calendar.DAY_OF_MONTH,dayOfMonth);
+                        cal.set(Calendar.MONTH, monthOfYear);
+                        cal.set(Calendar.YEAR, year);
+                        cal.set(Calendar.HOUR_OF_DAY,0);
+                        cal.set(Calendar.MINUTE,0);
+
+                        jstart_date_millis=cal.getTimeInMillis();
+
+                        timePicker();
+
+                        //*************Call Time Picker Here ********************
+
+                    }
+                }, mYear, mMonth, mDay);
+
+
+
+        //   datePickerDialog.getDatePicker().setMinDate(jstart_date_millis);
+        //   datePickerDialog.getDatePicker().setMaxDate(jstart_date_millis+5*24*60*60*1000);
+        datePickerDialog.show();
+    }
+
+    private void timePicker(){
+        // Get Current Time
+
+
+        // Launch Time Picker Dialog
+        TimePickerDialog timePickerDialog = new TimePickerDialog(this,
+                new TimePickerDialog.OnTimeSetListener() {
+
+                    @Override
+                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+
+                        mHour = hourOfDay;
+                        mMinute = minute;
+
+                        String sHour = mHour < 10 ? "0" + mHour : "" + mHour;
+                        String sMinute = mMinute < 10 ? "0" + mMinute : "" + mMinute;
+                        String set_time = sHour + ":" + sMinute;
+                        departAt.setText(set_time+","+departAt.getText());
+
+                        jstart_time_millis=(mHour*60+mMinute)*60*1000;
+
+
+
+                    }
+                }, mHour, mMinute, false);
+        timePickerDialog.show();
+    }
+
 }

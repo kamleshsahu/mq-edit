@@ -107,5 +107,5 @@
         <include layout="@layout/dragup_panel"></include>
     </LinearLayout>
     </com.sothree.slidinguppanel.SlidingUpPanelLayout>
-    <include layout="@layout/date_time_picker"></include>
+    <!--<include layout="@layout/date_time_picker"></include>-->
 </RelativeLayout>

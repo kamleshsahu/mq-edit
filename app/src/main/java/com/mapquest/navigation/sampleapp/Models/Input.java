@@ -97,7 +97,11 @@ public class Input implements Serializable
     }
 
     public void setTimeZone(String timeZone) {
-        this.timeZone = timeZone;
+        if(timeZone.contains("/")){
+            this.timeZone = timeZone.replace("/",".");
+        }else{
+            this.timeZone=timeZone;
+        }
     }
 
     public Long getTime() {
