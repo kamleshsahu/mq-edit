@@ -20,11 +20,13 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.annotation.ColorRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -39,10 +41,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -280,6 +284,8 @@ public class RouteSelectionActivity extends AppCompatActivity
     RequestQueue requestQueue;
 
     Menu menu;
+    SharedPreferences.Editor editor;
+    int i;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate()");
@@ -618,6 +624,100 @@ public class RouteSelectionActivity extends AppCompatActivity
         });
 
 
+        editor = getSharedPreferences("distance", MODE_PRIVATE).edit();
+        SharedPreferences prefs = getSharedPreferences("distance", MODE_PRIVATE);
+        int a=prefs.getInt("10",0);
+        switch(a){
+            case 10:
+              //  Toast.makeText(mApp, "10", Toast.LENGTH_SHORT).show();
+
+             try {
+                 Handler handler1 = new Handler();
+                 handler1.postDelayed(new Runnable() {
+                     @Override
+                     public void run() {
+                         MenuItem item = menu.findItem(R.id.km10);
+                         interval=10000;
+                         i=1;
+                         item.setChecked(true);
+                     }
+                 }, 2000);
+             }catch (Exception e){
+
+             }
+                break;
+            case 20:
+              //  Toast.makeText(mApp, "20", Toast.LENGTH_SHORT).show();
+                try {
+                    Handler handler1 = new Handler();
+                    handler1.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            MenuItem item = menu.findItem(R.id.km20);
+                            item.setChecked(true);
+                            interval=20000;
+                            i=2;
+                        }
+                    }, 2000);
+                }catch (Exception e){
+
+                }
+
+                break;
+            case 30:
+              //  Toast.makeText(mApp, "30", Toast.LENGTH_SHORT).show();
+                try {
+                    Handler handler1 = new Handler();
+                    handler1.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            MenuItem item = menu.findItem(R.id.km30);
+                            item.setChecked(true);
+                            interval=30000;
+                            i=3;
+                        }
+                    }, 2000);
+                }catch (Exception e){
+
+                }
+                break;
+            case 40:
+               // Toast.makeText(mApp, "40", Toast.LENGTH_SHORT).show();
+                try {
+                    Handler handler1 = new Handler();
+                    handler1.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            MenuItem item = menu.findItem(R.id.km40);
+                            item.setChecked(true);
+                            interval=40000;
+                            i=4;
+                        }
+                    }, 2000);
+                }catch (Exception e){
+
+                }
+                break;
+            case 50:
+               // Toast.makeText(mApp, "50", Toast.LENGTH_SHORT).show();
+                try {
+                    Handler handler1 = new Handler();
+                    handler1.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            MenuItem item = menu.findItem(R.id.km50);
+                            item.setChecked(true);
+                            interval=50000;
+                            i=5;
+                        }
+                    }, 2000);
+                }catch (Exception e){
+
+                }
+                break;
+            default:
+             //   Toast.makeText(mApp, "0", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void requestData(){
@@ -1579,27 +1679,42 @@ public class RouteSelectionActivity extends AppCompatActivity
             case R.id.km10:
                 item.setChecked(true);
                 interval=10000;
+                i=1;
+                editor.putInt("10",10);
+                editor.apply();
+                
                 return true;
             case R.id.km20:
                 item.setChecked(true);
                 interval=20000;
-
+                i=2;
+                editor.putInt("10",20);
+                editor.apply();
+                
                 return true;
             case R.id.km30:
                 item.setChecked(true);
                 interval=30000;
-
-                Toast.makeText(this, "30km", Toast.LENGTH_SHORT).show();
+                i=3;
+                editor.putInt("10",30);
+                editor.apply();
+                
                 return true;
             case R.id.km40:
                 item.setChecked(true);
                 interval=40000;
-
+                i=4;
+                editor.putInt("10",40);
+                editor.apply();
+                
                 return true;
             case R.id.km50:
                 item.setChecked(true);
                 interval=50000;
-
+                i=5;
+                editor.putInt("10",50);
+                editor.apply();
+                
                 return true;
             case R.id.action_retry:
                 expandableLayout.toggle();
